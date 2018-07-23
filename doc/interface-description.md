@@ -32,7 +32,7 @@
     "name": "request",
     "method": "biz.request",
     "args": [
-        {"name": "url", type: "string"}
+        {"name": "url", value: "string"}
     ]
 }
 ```
@@ -51,7 +51,7 @@ args
 
 `可选`
 
-`args` 属性是一个数组，声明接口的参数列表，其中每项声明是一个包含 `name` 和 `type` 的对象。`type` 的声明方式请参考 [值类型系统](#值类型系统)。
+`args` 属性是一个数组，声明接口的参数列表，其中每项声明是一个包含 `name` 和 `value` 的对象。`value` 的声明方式请参考 [值类型系统](#值类型系统)。
 
 当 `args` 属性不存在时，默认为空数组，意味着该通信接口无调用参数。
 
@@ -61,11 +61,11 @@ args
     "args": [
         {
             "name": "test", 
-            "type": "string"
+            "value": "string"
         },
         {
             "name": "one",
-            "type" : {
+            "value" : {
                 oneOf": ["One", 1, "one"]
             }
         }
@@ -91,21 +91,18 @@ processor-name[:arg]
 
 在调用过程中，支持的处理器有：
 
-- ArgCheck
-- ArgFuncArgDecode
-- ArgFuncEncode
-- ArgEncode
-- ArgAdd
-- ArgCombine
-- CallMethod
-- CallPrompt
-- CallIframe
-- CallLocation
-- CallMessage
-- ReturnDecode
-
-
-详细请参考 [过程处理器](#过程处理器)。
+- [ArgCheck](#ArgCheck)
+- [ArgFuncArgDecode](#ArgFuncArgDecode)
+- [ArgFuncEncode](#ArgFuncEncode)
+- [ArgEncode](#ArgEncode)
+- [ArgAdd](#ArgAdd)
+- [ArgCombine](#ArgCombine)
+- [CallMethod](#CallMethod)
+- [CallPrompt](#CallPrompt)
+- [CallIframe](#CallIframe)
+- [CallLocation](#CallLocation)
+- [CallMessage](#CallMessage)
+- [ReturnDecode](#ReturnDecode)
 
 
 
@@ -116,39 +113,79 @@ processor-name[:arg]
 
 ### ArgCheck
 
+该处理器根据 [args](#args) 声明，对调用时的参数类型进行检查，不符合时抛出异常。
+
+`无参数`
+
+
 
 ### ArgFuncArgDecode
+
+有的场景对 **回调函数** 的调用不支持非基础类型。该处理器对 **回调函数** 调用时的参数进行解码。
+
+`参数`：代表解码方式。仅为 **JSON**
 
 
 ### ArgFuncEncode
 
+有的场景对 **回调函数** 的传递不支持 function 类型。该处理器对 **回调函数** 进行管理，并转成全局可调用的函数名。
+
+`无参数`
+
 
 ### ArgEncode
+
+有的场景对 **调用参数** 只支持传递字符串。该处理器对 **调用参数** 进行序列化编码。
+
+`参数`：代表编码方式。仅为 **JSON**
 
 
 ### ArgAdd
 
+将描述对象中的属性，添加到调用参数中。比如使用 prompt 方式调用并传递的是 JSON 时，需要 name 属性标识，native 才知道当前调用的接口是什么。
+
+`参数`：代表要添加到调用参数的属性。值为 **property-name[>arg-name]**
+
 
 ### ArgCombine
+
+有的场景对 **调用参数** 只支持传递一个字符串或一个对象。该处理器对 **调用参数** 进行合并。
+
+`参数`：代表合并方式。值为 **JSON** 或 **URL**
+
+当参数的值为  **URL** 时，该处理器会使用描述对象的 `schema`、`authority`、`path` 字段生成完整的 URL。
 
 
 ### CallMethod
 
+直接通过方法调用。描述对象的 `method` 字段声明方法名。
+
 
 ### CallPrompt
+
+通过 prompt 调用。
 
 
 ### CallIframe
 
+通过 iframe 调用。
+
 
 ### CallLocation
+
+通过 location.href 调用。
 
 
 ### CallMessage
 
+通过 window.webkit.messageHandlers.[handler].postMessage 调用。描述对象的 `handler` 字段声明 handler。
+
 
 ### ReturnDecode
 
+有的场景调用 **返回值** 只支持基础类型。该处理器对 **返回值** 进行解码。
+
+`参数`：代表解码方式。仅为 **JSON**
 
 
 值类型系统
@@ -335,9 +372,9 @@ string[]
     "name": "request",
     "method": "_mod.request",
     "args": [
-        {"name": "url", type: "string"},
-        {"name": "method", type: "string"},
-        {"name": "onsuccess", type: "function"}
+        {"name": "url", value: "string"},
+        {"name": "method", value: "string"},
+        {"name": "onsuccess", value: "function"}
     ]
 }
 ```
@@ -352,7 +389,7 @@ string[]
     "name": "getStorage",
     "method": "_mod.getStorage",
     "args": [
-        {"name": "name", type: "string"}
+        {"name": "name", value: "string"}
     ]
 }
 ```
@@ -373,9 +410,9 @@ string[]
     "name": "request",
     "method": "_mod.request",
     "args": [
-        {"name": "url", type: "string"},
-        {"name": "method", type: "string"},
-        {"name": "onsuccess", type: "function"}
+        {"name": "url", value: "string"},
+        {"name": "method", value: "string"},
+        {"name": "onsuccess", value: "function"}
     ]
 }
 ```
@@ -395,7 +432,7 @@ string[]
     "name": "getStorage",
     "method": "_mod.getStorage",
     "args": [
-        {"name": "name", type: "string"}
+        {"name": "name", value: "string"}
     ]
 }
 ```
@@ -422,7 +459,7 @@ prompt 调用场景的特点是：
     ],
     "name": "getStorage",
     "args": [
-        {"name": "name", type: "string"}
+        {"name": "name", value: "string"}
     ]
 }
 ```
@@ -441,8 +478,8 @@ prompt 调用场景的特点是：
     ],
     "name": "setStorage",
     "args": [
-        {"name": "name", type: "string"}
-        {"name": "value", type: "*"}
+        {"name": "name", value: "string"}
+        {"name": "value", value: "*"}
     ]
 }
 ```
@@ -460,9 +497,9 @@ prompt 调用场景的特点是：
     ],
     "name": "request",
     "args": [
-        {"name": "url", type: "string"},
-        {"name": "method", type: "string"},
-        {"name": "onsuccess", type: "function"}
+        {"name": "url", value: "string"},
+        {"name": "method", value: "string"},
+        {"name": "onsuccess", value: "function"}
     ]
 }
 ```
@@ -484,9 +521,9 @@ prompt 调用场景的特点是：
     "authority": "net",
     "path": "/request",
     "args": [
-        {"name": "url", type: "string"},
-        {"name": "method", type: "string"},
-        {"name": "onsuccess", type: "function"}
+        {"name": "url", value: "string"},
+        {"name": "method", value: "string"},
+        {"name": "onsuccess", value: "function"}
     ]
 }
 ```
@@ -514,9 +551,9 @@ location 调用场景的特点是：
     "authority": "net",
     "path": "/request",
     "args": [
-        {"name": "url", type: "string"},
-        {"name": "method", type: "string"},
-        {"name": "onsuccess", type: "function"}
+        {"name": "url", value: "string"},
+        {"name": "method", value: "string"},
+        {"name": "onsuccess", value: "function"}
     ]
 }
 ```
@@ -545,9 +582,9 @@ iframe 调用场景的特点和 location 一样：
     "authority": "net",
     "path": "/request",
     "args": [
-        {"name": "url", type: "string"},
-        {"name": "method", type: "string"},
-        {"name": "onsuccess", type: "function"}
+        {"name": "url", value: "string"},
+        {"name": "method", value: "string"},
+        {"name": "onsuccess", value: "function"}
     ]
 }
 ```
@@ -574,9 +611,9 @@ postMessage 仅 iOS 的 WKWebView 支持，其特点是：
     "name": "request",
     "handler": "net",
     "args": [
-        {"name": "url", type: "string"},
-        {"name": "method", type: "string"},
-        {"name": "onsuccess", type: "function"}
+        {"name": "url", value: "string"},
+        {"name": "method", value: "string"},
+        {"name": "onsuccess", value: "function"}
     ]
 }
 ```
