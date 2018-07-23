@@ -32,7 +32,7 @@
     "name": "request",
     "method": "biz.request",
     "args": [
-        {"name": "url", value: "string"}
+        {"name": "url", "value": "string"}
     ]
 }
 ```
@@ -60,13 +60,13 @@ args
 {
     "args": [
         {
-            "name": "test", 
+            "name": "test",
             "value": "string"
         },
         {
             "name": "one",
-            "value" : {
-                oneOf": ["One", 1, "one"]
+            "value": {
+                "oneOf": ["One", 1, "one"]
             }
         }
     ]
@@ -372,9 +372,9 @@ string[]
     "name": "request",
     "method": "_mod.request",
     "args": [
-        {"name": "url", value: "string"},
-        {"name": "method", value: "string"},
-        {"name": "onsuccess", value: "function"}
+        {"name": "url", "value": "string"},
+        {"name": "method", "value": "string"},
+        {"name": "onsuccess", "value": "function"}
     ]
 }
 ```
@@ -389,7 +389,7 @@ string[]
     "name": "getStorage",
     "method": "_mod.getStorage",
     "args": [
-        {"name": "name", value: "string"}
+        {"name": "name", "value": "string"}
     ]
 }
 ```
@@ -410,9 +410,9 @@ string[]
     "name": "request",
     "method": "_mod.request",
     "args": [
-        {"name": "url", value: "string"},
-        {"name": "method", value: "string"},
-        {"name": "onsuccess", value: "function"}
+        {"name": "url", "value": "string"},
+        {"name": "method", "value": "string"},
+        {"name": "onsuccess", "value": "function"}
     ]
 }
 ```
@@ -432,7 +432,7 @@ string[]
     "name": "getStorage",
     "method": "_mod.getStorage",
     "args": [
-        {"name": "name", value: "string"}
+        {"name": "name", "value": "string"}
     ]
 }
 ```
@@ -459,7 +459,7 @@ prompt 调用场景的特点是：
     ],
     "name": "getStorage",
     "args": [
-        {"name": "name", value: "string"}
+        {"name": "name", "value": "string"}
     ]
 }
 ```
@@ -478,8 +478,8 @@ prompt 调用场景的特点是：
     ],
     "name": "setStorage",
     "args": [
-        {"name": "name", value: "string"}
-        {"name": "value", value: "*"}
+        {"name": "name", "value": "string"}
+        {"name": "value", "value": "*"}
     ]
 }
 ```
@@ -497,9 +497,9 @@ prompt 调用场景的特点是：
     ],
     "name": "request",
     "args": [
-        {"name": "url", value: "string"},
-        {"name": "method", value: "string"},
-        {"name": "onsuccess", value: "function"}
+        {"name": "url", "value": "string"},
+        {"name": "method", "value": "string"},
+        {"name": "onsuccess", "value": "function"}
     ]
 }
 ```
@@ -521,9 +521,9 @@ prompt 调用场景的特点是：
     "authority": "net",
     "path": "/request",
     "args": [
-        {"name": "url", value: "string"},
-        {"name": "method", value: "string"},
-        {"name": "onsuccess", value: "function"}
+        {"name": "url", "value": "string"},
+        {"name": "method", "value": "string"},
+        {"name": "onsuccess", "value": "function"}
     ]
 }
 ```
@@ -551,9 +551,9 @@ location 调用场景的特点是：
     "authority": "net",
     "path": "/request",
     "args": [
-        {"name": "url", value: "string"},
-        {"name": "method", value: "string"},
-        {"name": "onsuccess", value: "function"}
+        {"name": "url", "value": "string"},
+        {"name": "method", "value": "string"},
+        {"name": "onsuccess", "value": "function"}
     ]
 }
 ```
@@ -582,9 +582,9 @@ iframe 调用场景的特点和 location 一样：
     "authority": "net",
     "path": "/request",
     "args": [
-        {"name": "url", value: "string"},
-        {"name": "method", value: "string"},
-        {"name": "onsuccess", value: "function"}
+        {"name": "url", "value": "string"},
+        {"name": "method", "value": "string"},
+        {"name": "onsuccess", "value": "function"}
     ]
 }
 ```
@@ -611,9 +611,9 @@ postMessage 仅 iOS 的 WKWebView 支持，其特点是：
     "name": "request",
     "handler": "net",
     "args": [
-        {"name": "url", value: "string"},
-        {"name": "method", value: "string"},
-        {"name": "onsuccess", value: "function"}
+        {"name": "url", "value": "string"},
+        {"name": "method", "value": "string"},
+        {"name": "onsuccess", "value": "function"}
     ]
 }
 ```
