@@ -80,10 +80,10 @@ invoke
 
 `必选`
 
-`invoke` 属性是一个数组，其中每项为字符串，声明调用过程。接口调用过程是一个同步的处理链，`invoke` 数组声明调用过程的每个处理节点。
+`invoke` 属性是一个数组或字符串。
 
 
-处理节点字符串的格式为：
+当 `invoke` 为数组时，其中每项为字符串，声明调用过程。接口调用过程是一个同步的处理链，`invoke` 数组声明调用过程的每个处理节点。处理节点字符串的格式为：
 
 ```
 processor-name[:arg]
@@ -91,20 +91,35 @@ processor-name[:arg]
 
 在调用过程中，支持的处理器有：
 
-- [ArgCheck](#ArgCheck)
-- [ArgFuncArgDecode](#ArgFuncArgDecode)
-- [ArgFuncEncode](#ArgFuncEncode)
-- [ArgEncode](#ArgEncode)
-- [ArgAdd](#ArgAdd)
-- [ArgCombine](#ArgCombine)
-- [CallMethod](#CallMethod)
-- [CallPrompt](#CallPrompt)
-- [CallIframe](#CallIframe)
-- [CallLocation](#CallLocation)
-- [CallMessage](#CallMessage)
-- [ReturnDecode](#ReturnDecode)
+- [ArgCheck](#argcheck)
+- [ArgFuncArgDecode](#argfuncargdecode)
+- [ArgFuncEncode](#argfuncencode)
+- [ArgEncode](#argencode)
+- [ArgAdd](#argadd)
+- [ArgCombine](#argcombine)
+- [CallMethod](#callMethod)
+- [CallPrompt](#callprompt)
+- [CallIframe](#calliframe)
+- [CallLocation](#calllocation)
+- [CallMessage](#callmessage)
+- [ReturnDecode](#returndecode)
 
+```json
+{
+    "invoke": [
+        "ArgCheck",
+        "CallMethod"
+    ]
+}
+```
 
+当 `invoke` 为字符串时，代表经典调用场景的简写。请参考 [经典调用场景](#经典调用场景)
+
+```json
+{
+    "invoke": "method"
+}
+```
 
 
 过程处理器
@@ -357,7 +372,29 @@ string[]
 经典调用场景
 --------
 
-### call
+
+一些经典调用场景， `invoke` 属性可以使用简写：
+
+- method
+- method.json
+- prompt.json
+- prompt.url
+- location
+- iframe
+- message
+
+可见，简写的基本形式为： `调用方式[.子场景]`。以上简写默认调用前对参数类型进行校验，如果不希望校验，可在前面加上 `nocheck`
+
+- nocheck.method
+- nocheck.method.json
+- nocheck.prompt.json
+- nocheck.prompt.url
+- nocheck.location
+- nocheck.iframe
+- nocheck.message
+
+
+### method
 
 
 直接调用的接口声明比较简单：
@@ -394,8 +431,23 @@ string[]
 }
 ```
 
+`简写`: method
+
+```json
+// 同步
+{
+    "invoke": "method",
+    "name": "getStorage",
+    "method": "_mod.getStorage",
+    "args": [
+        {"name": "name", "value": "string"}
+    ]
+}
+```
+
 
 当直接调用的参数和返回值不支持非基础类型时，必须序列化。常见场景为 Android 下 addJavaScriptInterface 注入的方法。
+
 
 ```json
 // 异步
@@ -437,6 +489,20 @@ string[]
 }
 ```
 
+`简写`: method.json
+
+```json
+// 同步
+{
+    "invoke": "method.json",
+    "name": "getStorage",
+    "method": "_mod.getStorage",
+    "args": [
+        {"name": "name", "value": "string"}
+    ]
+}
+```
+
 
 ### prompt
 
@@ -465,6 +531,7 @@ prompt 调用场景的特点是：
 ```
 
 由于调用只能传递一个字符串，我们需要将足够的调用信息编码在这个字符串中。JSON 是常用的形式：
+
 
 ```json
 {
@@ -504,7 +571,25 @@ prompt 调用场景的特点是：
 }
 ```
 
+`简写`: prompt.json
+
+```json
+{
+    "invoke": "prompt.json",
+    "name": "request",
+    "args": [
+        {"name": "url", "value": "string"},
+        {"name": "method", "value": "string"},
+        {"name": "onsuccess", "value": "function"}
+    ]
+}
+```
+
+
+
+
 另外一种常见形式是 URL：
+
 
 ```json
 {
@@ -514,8 +599,26 @@ prompt 调用场景的特点是：
         "ArgFuncEncode",
         "ArgEncode:JSON",
         "ArgCombine:URL",
-        "CallPrompt"
+        "CallPrompt",
+        "ReturnDecode:JSON"
     ],
+    "name": "request",
+    "schema": "nothttp",
+    "authority": "net",
+    "path": "/request",
+    "args": [
+        {"name": "url", "value": "string"},
+        {"name": "method", "value": "string"},
+        {"name": "onsuccess", "value": "function"}
+    ]
+}
+```
+
+`简写`: prompt.url
+
+```json
+{
+    "invoke": "prompt.url",
     "name": "request",
     "schema": "nothttp",
     "authority": "net",
@@ -531,10 +634,12 @@ prompt 调用场景的特点是：
 
 ### location
 
+
 location 调用场景的特点是：
 
 - 只能传递一个 URL 字符串，所以参数必须 `合并+序列化`
 - 只支持异步，无法同步返回
+
 
 ```json
 {
@@ -558,14 +663,33 @@ location 调用场景的特点是：
 }
 ```
 
+`简写`: location
+
+```json
+{
+    "invoke": "location",
+    "name": "request",
+    "schema": "nothttp",
+    "authority": "net",
+    "path": "/request",
+    "args": [
+        {"name": "url", "value": "string"},
+        {"name": "method", "value": "string"},
+        {"name": "onsuccess", "value": "function"}
+    ]
+}
+```
 
 
 ### iframe
+
 
 iframe 调用场景的特点和 location 一样：
 
 - 只能传递一个 URL 字符串，所以参数必须 `合并+序列化`
 - 只支持异步，无法同步返回
+
+
 
 ```json
 {
@@ -589,7 +713,25 @@ iframe 调用场景的特点和 location 一样：
 }
 ```
 
+`简写`: iframe
+
+```json
+{
+    "invoke": "iframe",
+    "name": "request",
+    "schema": "nothttp",
+    "authority": "net",
+    "path": "/request",
+    "args": [
+        {"name": "url", "value": "string"},
+        {"name": "method", "value": "string"},
+        {"name": "onsuccess", "value": "function"}
+    ]
+}
+```
+
 ### postMessage
+
 
 postMessage 仅 iOS 的 WKWebView 支持，其特点是：
 
@@ -608,6 +750,21 @@ postMessage 仅 iOS 的 WKWebView 支持，其特点是：
         "ArgAdd:name",
         "CallMessage"
     ],
+    "name": "request",
+    "handler": "net",
+    "args": [
+        {"name": "url", "value": "string"},
+        {"name": "method", "value": "string"},
+        {"name": "onsuccess", "value": "function"}
+    ]
+}
+```
+
+`简写`: message
+
+```json
+{
+    "invoke": "message",
     "name": "request",
     "handler": "net",
     "args": [
