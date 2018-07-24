@@ -5,6 +5,43 @@
 通信接口描述
 =========
 
+
+
+[name](#name)  
+[args](#args)  
+[invoke](#invoke)  
+[过程处理器](#过程处理器)  
+　　[ArgCheck](#argcheck)  
+　　[ArgFuncArgDecode](#argfuncargdecode)  
+　　[ArgFuncEncode](#argfuncencode)  
+　　[ArgEncode](#argencode)  
+　　[ArgAdd](#argadd)  
+　　[ArgCombine](#argcombine)  
+　　[CallMethod](#callMethod)  
+　　[CallPrompt](#callprompt)  
+　　[CallIframe](#calliframe)  
+　　[CallLocation](#calllocation)  
+　　[CallMessage](#callmessage)  
+　　[ReturnDecode](#returndecode)  
+[值类型系统](#值类型系统)  
+　　[类型定义](#类型定义)  
+　　[值类型声明](#值类型声明)  
+　　　　[type](#type)  
+　　　　[oneOf](#oneof)  
+　　　　[oneOfType](#oneoftype)  
+　　　　[arrayOf](#arrayof)  
+　　　　[isRequired](#isrequired)  
+　　[值类型快捷声明](#值类型快捷声明)  
+[经典调用场景](#经典调用场景)  
+　　[method](#method)  
+　　[prompt](#prompt)  
+　　[location](#location)  
+　　[iframe](#iframe)  
+　　[postMessage](#postmessage)  
+
+
+
+
 通信接口描述可能通过通信接口返回，也可能在 JavaScript 中静态维护。通信接口返回的类型可能受限，所以通信接口描述是一个 [JSON](http://json.org/) 对象。
 
 通信接口描述中，基本属性有：
@@ -205,6 +242,7 @@ processor-name[:arg]
 
 值类型系统
 --------
+
 
 ### 类型定义
 
@@ -729,6 +767,7 @@ iframe 调用场景的特点和 location 一样：
     ]
 }
 ```
+
 
 ### postMessage
 
