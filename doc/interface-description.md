@@ -7,6 +7,39 @@
 
 
 
+通信接口描述可能通过通信接口返回，也可能在 JavaScript 中静态维护。通信接口返回的类型可能受限，所以通信接口描述是一个 [JSON](http://json.org/) 对象。
+
+通信接口描述中，基本属性有：
+
+- name
+- invoke
+- args
+
+与invoke相关的属性有：
+
+- method
+- handler
+- schema
+- authority
+- path
+
+
+```json
+{
+    "invoke": [
+        "CallMethod"
+    ],
+
+    "name": "request",
+    "method": "biz.request",
+    "args": [
+        {"name": "url", "value": "string"}
+    ]
+}
+```
+
+
+
 [name](#name)  
 [args](#args)  
 [invoke](#invoke)  
@@ -39,40 +72,6 @@
 　　[iframe](#iframe)  
 　　[postMessage](#postmessage)  
 
-
-
-
-通信接口描述可能通过通信接口返回，也可能在 JavaScript 中静态维护。通信接口返回的类型可能受限，所以通信接口描述是一个 [JSON](http://json.org/) 对象。
-
-通信接口描述中，基本属性有：
-
-- name
-- invoke
-- args
-
-与invoke相关的属性有：
-
-- method
-- handler
-- schema
-- authority
-- path
-
-
-
-```json
-{
-    "invoke": [
-        "CallMethod"
-    ],
-
-    "name": "request",
-    "method": "biz.request",
-    "args": [
-        {"name": "url", "value": "string"}
-    ]
-}
-```
 
 name
 -------
