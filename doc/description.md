@@ -579,6 +579,7 @@ string[]
 
 
 ```json
+{
     "invoke": "method.json",
     "name": "request",
     "method": "_mod.request",
@@ -594,6 +595,7 @@ string[]
 
 
 ```json
+{
     "invoke": {
         "call": "method",
         "check": true,
@@ -648,6 +650,7 @@ prompt 调用场景的特点是：
 
 
 ```json
+{
     "invoke": "prompt.json",
     "name": "request",
     "args": [
@@ -662,6 +665,7 @@ prompt 调用场景的特点是：
 
 
 ```json
+{
     "invoke": {
         "call": "prompt",
         "check": true,
