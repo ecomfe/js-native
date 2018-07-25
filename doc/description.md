@@ -43,19 +43,24 @@
 [name](#name)  
 [args](#args)  
 [invoke](#invoke)  
-[过程处理器](#过程处理器)  
-　　[ArgCheck](#argcheck)  
-　　[ArgFuncArgDecode](#argfuncargdecode)  
-　　[ArgFuncEncode](#argfuncencode)  
-　　[ArgEncode](#argencode)  
-　　[ArgAdd](#argadd)  
-　　[ArgCombine](#argcombine)  
-　　[CallMethod](#callMethod)  
-　　[CallPrompt](#callprompt)  
-　　[CallIframe](#calliframe)  
-　　[CallLocation](#calllocation)  
-　　[CallMessage](#callmessage)  
-　　[ReturnDecode](#returndecode)  
+　　[过程处理器](#过程处理器)  
+　　　　[ArgCheck](#argcheck)
+　　　　[ArgFuncArgDecode](#argfuncargdecode)
+　　　　[ArgFuncEncode](#argfuncencode)
+　　　　[ArgEncode](#argencode)
+　　　　[ArgAdd](#argadd)
+　　　　[ArgCombine](#argcombine)
+　　　　[CallMethod](#callMethod)
+　　　　[CallPrompt](#callprompt)
+　　　　[CallIframe](#calliframe)
+　　　　[CallLocation](#calllocation)
+　　　　[CallMessage](#callmessage)
+　　　　[ReturnDecode](#returndecode)
+　　[调用阶段](#调用阶段)  
+　　　　[check](#check)
+　　　　[before](#before)
+　　　　[call](#call)
+　　　　[after](#after)
 [值类型系统](#值类型系统)  
 　　[类型定义](#类型定义)  
 　　[值类型声明](#值类型声明)  
@@ -116,7 +121,7 @@ invoke
 
 `必选`
 
-`invoke` 属性是一个数组或字符串。
+`invoke` 属性是一个数组或对象或字符串。
 
 
 当 `invoke` 为数组时，其中每项为字符串，声明调用过程。接口调用过程是一个同步的处理链，`invoke` 数组声明调用过程的每个处理节点。处理节点字符串的格式为：
@@ -149,7 +154,32 @@ processor-name[:arg]
 }
 ```
 
-当 `invoke` 为字符串时，代表经典调用场景的简写。请参考 [经典调用场景](#经典调用场景)
+当 `invoke` 为对象时，对调用过程进行了阶段抽象。相比纯顺序数组，对象形式通常更精简，但是没那么灵活。查看 [调用阶段](#调用阶段)
+
+- [check](#check)
+- [before](#before)
+- [call](#call)
+- [after](#after)
+
+```json
+{
+    "invoke": {
+        "call": "method"
+    }
+}
+```
+
+部分 JavaScript 和 Native 的通信场景限制较多，必须在 JavaScript 中完成相关的参数编码合并、返回值解码等步骤，所以 `invoke` 支持如下 [经典调用场景](#经典调用场景) 的字符串简写。
+
+经典调用场景字符串不可扩充，更灵活的扩张请通过数组或对象形式的 `invoke` 属性。
+
+- method
+- method.json
+- prompt.json
+- prompt.url
+- location
+- iframe
+- message
 
 ```json
 {
@@ -158,11 +188,12 @@ processor-name[:arg]
 ```
 
 
-过程处理器
---------
+### 过程处理器
+
+当 `invoke` 为数组时，其中每项声明一个调用过程的处理，可使用如下调用过程处理器。
 
 
-### ArgCheck
+#### ArgCheck
 
 该处理器根据 [args](#args) 声明，对调用时的参数类型进行检查，不符合时抛出异常。
 
@@ -170,35 +201,35 @@ processor-name[:arg]
 
 
 
-### ArgFuncArgDecode
+#### ArgFuncArgDecode
 
 有的场景对 **回调函数** 的调用不支持非基础类型。该处理器对 **回调函数** 调用时的参数进行解码。
 
 `参数`：代表解码方式。仅为 **JSON**
 
 
-### ArgFuncEncode
+#### ArgFuncEncode
 
 有的场景对 **回调函数** 的传递不支持 function 类型。该处理器对 **回调函数** 进行管理，并转成全局可调用的函数名。
 
 `无参数`
 
 
-### ArgEncode
+#### ArgEncode
 
 有的场景对 **调用参数** 只支持传递字符串。该处理器对 **调用参数** 进行序列化编码。
 
 `参数`：代表编码方式。仅为 **JSON**
 
 
-### ArgAdd
+#### ArgAdd
 
 将描述对象中的属性，添加到调用参数中。比如使用 prompt 方式调用并传递的是 JSON 时，需要 name 属性标识，native 才知道当前调用的接口是什么。
 
 `参数`：代表要添加到调用参数的属性。值为 **property-name[>arg-name]**
 
 
-### ArgCombine
+#### ArgCombine
 
 有的场景对 **调用参数** 只支持传递一个字符串或一个对象。该处理器对 **调用参数** 进行合并。
 
@@ -207,36 +238,73 @@ processor-name[:arg]
 当参数的值为  **URL** 时，该处理器会使用描述对象的 `schema`、`authority`、`path` 字段生成完整的 URL。
 
 
-### CallMethod
+#### CallMethod
 
 直接通过方法调用。描述对象的 `method` 字段声明方法名。
 
 
-### CallPrompt
+#### CallPrompt
 
 通过 prompt 调用。
 
 
-### CallIframe
+#### CallIframe
 
 通过 iframe 调用。
 
 
-### CallLocation
+#### CallLocation
 
 通过 location.href 调用。
 
 
-### CallMessage
+#### CallMessage
 
 通过 window.webkit.messageHandlers.[handler].postMessage 调用。描述对象的 `handler` 字段声明 handler。
 
 
-### ReturnDecode
+#### ReturnDecode
 
 有的场景调用 **返回值** 只支持基础类型。该处理器对 **返回值** 进行解码。
 
 `参数`：代表解码方式。仅为 **JSON**
+
+
+
+### 调用阶段
+
+
+当 `invoke` 为对象时，按调用阶段进行调用过程处理的声明。调用阶段如下：
+
+
+#### check
+
+`boolean=`
+
+参数校验。
+
+
+#### before
+
+`string=`
+
+调用之前，对参数进行序列化与合并等处理。取值范围：JSONStringInTurn | JSONString | JSONObject | URL
+
+
+#### call
+
+`string`
+
+调用方法。取值范围：method | prompt | location | iframe | message
+
+
+#### after
+
+`string=`
+
+调用完成，对返回值进行处理。string。取值范围：JSON
+
+
 
 
 值类型系统
@@ -420,16 +488,6 @@ string[]
 - iframe
 - message
 
-可见，简写的基本形式为： `调用方式[.子场景]`。以上简写默认调用前对参数类型进行校验，如果不希望校验，可在前面加上 `nocheck`
-
-- nocheck.method
-- nocheck.method.json
-- nocheck.prompt.json
-- nocheck.prompt.url
-- nocheck.location
-- nocheck.iframe
-- nocheck.message
-
 
 ### method
 
@@ -437,7 +495,6 @@ string[]
 直接调用的接口声明比较简单：
 
 ```json
-// 异步
 {
     "invoke": [
         "ArgCheck",
@@ -453,62 +510,49 @@ string[]
 }
 ```
 
-```json
-// 同步
-{
-    "invoke": [
-        "ArgCheck",
-        "CallMethod"
-    ],
-    "name": "getStorage",
-    "method": "_mod.getStorage",
-    "args": [
-        {"name": "name", "value": "string"}
-    ]
-}
-```
 
-`简写`: method
+简写形式：
+
 
 ```json
-// 同步
 {
     "invoke": "method",
-    "name": "getStorage",
-    "method": "_mod.getStorage",
+    "name": "request",
+    "method": "_mod.request",
     "args": [
-        {"name": "name", "value": "string"}
+        {"name": "url", "value": "string"},
+        {"name": "method", "value": "string"},
+        {"name": "onsuccess", "value": "function"}
     ]
 }
 ```
 
+对象形式：
+
+
+```json
+{
+    "invoke": {
+        "call": "method",
+        "check": true
+    },
+    "name": "request",
+    "method": "_mod.request",
+    "args": [
+        {"name": "url", "value": "string"},
+        {"name": "method", "value": "string"},
+        {"name": "onsuccess", "value": "function"}
+    ]
+}
+```
+
+
+### method.json
 
 当直接调用的参数和返回值不支持非基础类型时，必须序列化。常见场景为 Android 下 addJavaScriptInterface 注入的方法。
 
 
 ```json
-// 异步
-{
-    "invoke": [
-        "ArgCheck",
-        "ArgFuncArgDecode:JSON",
-        "ArgFuncEncode",
-        "ArgEncode:JSON",
-        "CallMethod"
-    ],
-    "name": "request",
-    "method": "_mod.request",
-    "args": [
-        {"name": "url", "value": "string"},
-        {"name": "method", "value": "string"},
-        {"name": "onsuccess", "value": "function"}
-    ]
-}
-```
-
-
-```json
-// 同步
 {
     "invoke": [
         "ArgCheck",
@@ -518,75 +562,63 @@ string[]
         "CallMethod",
         "ReturnDecode:JSON"
     ],
-    "name": "getStorage",
-    "method": "_mod.getStorage",
+    "name": "request",
+    "method": "_mod.request",
     "args": [
-        {"name": "name", "value": "string"}
+        {"name": "url", "value": "string"},
+        {"name": "method", "value": "string"},
+        {"name": "onsuccess", "value": "function"}
     ]
 }
 ```
 
-`简写`: method.json
+
+简写形式：
+
 
 ```json
-// 同步
-{
     "invoke": "method.json",
-    "name": "getStorage",
-    "method": "_mod.getStorage",
+    "name": "request",
+    "method": "_mod.request",
     "args": [
-        {"name": "name", "value": "string"}
+        {"name": "url", "value": "string"},
+        {"name": "method", "value": "string"},
+        {"name": "onsuccess", "value": "function"}
+    ]
+}
+```
+
+对象形式：
+
+
+```json
+    "invoke": {
+        "call": "method",
+        "check": true,
+        "before": "JSONStringInTurn",
+        "after": "JSON"
+    },
+    "name": "request",
+    "method": "_mod.request",
+    "args": [
+        {"name": "url", "value": "string"},
+        {"name": "method", "value": "string"},
+        {"name": "onsuccess", "value": "function"}
     ]
 }
 ```
 
 
-### prompt
+### prompt.json
 
 prompt 调用场景的特点是：
 
 - 只能传递一个字符串，所以参数必须 `合并+序列化`
 - 支持同步返回，但是只能返回字符串，所以返回值也必须 `反序列化`
 
-
-```json
-// 同步
-{
-    "invoke": [
-        "ArgCheck",
-        "ArgEncode:JSON",
-        "ArgAdd:name",
-        "ArgCombine:JSON",
-        "CallPrompt",
-        "ReturnDecode:JSON"
-    ],
-    "name": "getStorage",
-    "args": [
-        {"name": "name", "value": "string"}
-    ]
-}
-```
-
 由于调用只能传递一个字符串，我们需要将足够的调用信息编码在这个字符串中。JSON 是常用的形式：
 
 
-```json
-{
-    "invoke": [
-        "ArgCheck",
-        "ArgEncode:JSON",
-        "ArgAdd:name",
-        "ArgCombine:JSON",
-        "CallPrompt",
-        "ReturnDecode:JSON"
-    ],
-    "name": "setStorage",
-    "args": [
-        {"name": "name", "value": "string"}
-        {"name": "value", "value": "*"}
-    ]
-}
-```
 
 ```json
 {
@@ -597,7 +629,8 @@ prompt 调用场景的特点是：
         "ArgEncode:JSON",
         "ArgAdd:name",
         "ArgCombine:JSON",
-        "CallPrompt"
+        "CallPrompt",
+        "ReturnDecode:JSON"
     ],
     "name": "request",
     "args": [
@@ -608,10 +641,11 @@ prompt 调用场景的特点是：
 }
 ```
 
-`简写`: prompt.json
+
+简写形式：
+
 
 ```json
-{
     "invoke": "prompt.json",
     "name": "request",
     "args": [
@@ -622,10 +656,29 @@ prompt 调用场景的特点是：
 }
 ```
 
+对象形式：
 
 
+```json
+    "invoke": {
+        "call": "prompt",
+        "check": true,
+        "before": "JSONString",
+        "after": "JSON"
+    },
+    "name": "request",
+    "args": [
+        {"name": "url", "value": "string"},
+        {"name": "method", "value": "string"},
+        {"name": "onsuccess", "value": "function"}
+    ]
+}
+```
 
-另外一种常见形式是 URL：
+### prompt.url
+
+
+通过 prompt 调用的另外一种常见形式是 URL。
 
 
 ```json
@@ -651,11 +704,35 @@ prompt 调用场景的特点是：
 }
 ```
 
-`简写`: prompt.url
+简写形式：
+
 
 ```json
 {
     "invoke": "prompt.url",
+    "name": "request",
+    "schema": "nothttp",
+    "authority": "net",
+    "path": "/request",
+    "args": [
+        {"name": "url", "value": "string"},
+        {"name": "method", "value": "string"},
+        {"name": "onsuccess", "value": "function"}
+    ]
+}
+```
+
+对象形式：
+
+
+```json
+{
+    "invoke": {
+        "call": "prompt",
+        "check": true,
+        "before": "URL",
+        "after": "JSON"
+    },
     "name": "request",
     "schema": "nothttp",
     "authority": "net",
@@ -700,11 +777,33 @@ location 调用场景的特点是：
 }
 ```
 
-`简写`: location
+简写形式：
 
 ```json
 {
     "invoke": "location",
+    "name": "request",
+    "schema": "nothttp",
+    "authority": "net",
+    "path": "/request",
+    "args": [
+        {"name": "url", "value": "string"},
+        {"name": "method", "value": "string"},
+        {"name": "onsuccess", "value": "function"}
+    ]
+}
+```
+
+对象形式：
+
+
+```json
+{
+    "invoke": {
+        "call": "location",
+        "check": true,
+        "before": "URL"
+    },
     "name": "request",
     "schema": "nothttp",
     "authority": "net",
@@ -750,7 +849,7 @@ iframe 调用场景的特点和 location 一样：
 }
 ```
 
-`简写`: iframe
+简写形式：
 
 ```json
 {
@@ -767,8 +866,30 @@ iframe 调用场景的特点和 location 一样：
 }
 ```
 
+对象形式：
 
-### postMessage
+
+```json
+{
+    "invoke": {
+        "call": "iframe",
+        "check": true,
+        "before": "URL"
+    },
+    "name": "request",
+    "schema": "nothttp",
+    "authority": "net",
+    "path": "/request",
+    "args": [
+        {"name": "url", "value": "string"},
+        {"name": "method", "value": "string"},
+        {"name": "onsuccess", "value": "function"}
+    ]
+}
+```
+
+
+### message
 
 
 postMessage 仅 iOS 的 WKWebView 支持，其特点是：
@@ -798,7 +919,7 @@ postMessage 仅 iOS 的 WKWebView 支持，其特点是：
 }
 ```
 
-`简写`: message
+简写形式：
 
 ```json
 {
@@ -813,4 +934,22 @@ postMessage 仅 iOS 的 WKWebView 支持，其特点是：
 }
 ```
 
+对象形式：
+
+```json
+{
+    "invoke": {
+        "call": "message",
+        "check": true,
+        "before": "JSONObject"
+    },
+    "name": "request",
+    "handler": "net",
+    "args": [
+        {"name": "url", "value": "string"},
+        {"name": "method", "value": "string"},
+        {"name": "onsuccess", "value": "function"}
+    ]
+}
+```
 
