@@ -17,8 +17,8 @@ jsNative 是一个 JavaScript 与 Native 通信管理的库。其基于 [通信�
 ```js
 let apiList = jsNative.invoke({
     "invoke": "method.json",
-    "name": "api.getList",
-    "method": "_api.getList"
+    "name": "na.getAPIs",
+    "method": "_na.getAPIs"
 });
 ```
 
@@ -29,8 +29,8 @@ jsNative 调用后得到一个 api 容器对象，该对象可以添加接口描
 let apiContainer = jsNative()
     .add({
         "invoke": "method.json",
-        "name": "request",
-        "method": "_mod.request",
+        "name": "net.request",
+        "method": "_naNet.request",
         "args": [
             {"name": "url", "value": "string"},
             {"name": "method", "value": "string"},
@@ -42,7 +42,7 @@ let apiContainer = jsNative()
 api 容器可以使用 `invoke` 方法调用 api。
 
 ```js
-apiContainer.invoke('request', 'my-url', 'GET', data => {});
+apiContainer.invoke('request', ['my-url', 'GET', data => {}]);
 ```
 
 api 容器通过 `map` 方法可以生成一个对象，对象上包含接口直接调用的方法。
@@ -51,8 +51,8 @@ api 容器通过 `map` 方法可以生成一个对象，对象上包含接口直
 let mod = jsNative()
     .add({
         "invoke": "method.json",
-        "name": "request",
-        "method": "_mod.request",
+        "name": "net.request",
+        "method": "_naNet.request",
         "args": [
             {"name": "url", "value": "string"},
             {"name": "method", "value": "string"},
@@ -71,11 +71,9 @@ api 容器可以使用 `fromNative` 方法直接从一个 **返回所有接口�
 ```js
 let mod = jsNative()
     .fromNative({
-        "invoke": [
-            "CallMethod"
-        ],
-        "name": "api.getList",
-        "method": "_api.getList"
+        "invoke": "method",
+        "name": "na.getAPIs",
+        "method": "_na.getAPIs"
     })
     .map(name => name.slice(name.indexOf('.') + 1));
 ```
