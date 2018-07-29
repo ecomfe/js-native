@@ -41,6 +41,14 @@
 - 对于 `prompt`，`name` 必须为 `na.getAPIs`
 
 
+#### 【强制】 Native 回调 JavaScript 的函数，必须并且只能包含一个 Object 类型的参数，并遵循如下定义
+
+- `status` 字段：必选，int 类型。标识 Native 运行结果。`0` 为成功，`非0` 为错误码
+- `statusInfo` 字段：可选，状态信息的额外说明。可以是 string，也可以是 Object
+- `data` 字段：可选，标识要返回的数据。根据回调场景可以是任何类型
+
+
+
 
 ## JavaScript
 
