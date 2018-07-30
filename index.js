@@ -92,13 +92,14 @@
     };
 
     APIContainer.prototype.invoke = function (name, args) {
+        return jsNative.invoke(this.apiIndex[name], args);
     };
 
     function jsNative() {
         return new APIContainer();
     }
 
-    jsNative.invoke = function (description) {
+    jsNative.invoke = function (description, args) {
 
     };
 
