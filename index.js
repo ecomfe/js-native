@@ -143,23 +143,48 @@
         },
         
         CallMethod: function (description, option) {
+            var method;
+            function findMethod() {
+                if (!method) {
+                    var segs = description.method.split('.');
+                    method = root;
+                    for (var i = 0; i < segs.length; i++) {
+                        method = method[segs[i]];
+                    }
+                }
 
+                return method;
+            }
+
+            if (description.args.length < 5) {
+                return function (args) {
+                    var fn = findMethod;
+                    fn(args[0], args[1], args[2], args[3]);
+                };
+            }
+
+            return function (args) {
+                var fn = findMethod;
+                fn.apply(root, args);
+            };
         },
         
-        CallPrompt: function (description, option) {
-
+        CallPrompt: function () {
+            return callPrompt;
         },
         
         CallIframe: function (description, option) {
-
+            return callIframe;
         },
         
         CallLocation: function (description, option) {
-
+            return callLocation;
         },
         
         CallMessage: function (description, option) {
-
+            return function (args) {
+                root.webkit.messageHandlers[description.handler].postMessage(args);
+            };
         },
         
         ReturnDecode: function (description, option) {
@@ -169,6 +194,21 @@
         }
     };
 
+    function callPrompt(source) {
+        return root.prompt(source);
+    }
+
+    function callLocation(url) {
+        root.location.href = url;
+    }
+
+    function callIframe(url) {
+        var iframe = document.createElement('iframe');
+        iframe.src = url;
+        document.body.appendChild(iframe);
+
+        document.body.removeChild(iframe);
+    }
 
 
     function APIContainer() {
