@@ -1,5 +1,9 @@
 (function (root) {
 
+    function returnRaw(source) {
+        return source;
+    }
+
     var Processors = {
         ArgCheck: function (description, option) {
 
@@ -46,7 +50,9 @@
         },
         
         ReturnDecode: function (description, option) {
-
+            return option === 'JSON'
+                ? JSON.parse
+                : returnRaw;
         }
     };
 
@@ -54,9 +60,26 @@
 
     function APIContainer() {
         this.apis = [];
+        this.apiIndex = {};
     }
 
     APIContainer.prototype.add = function (description) {
+        if (description instanceof Array) {
+            for (var i = 0; i < description.length; i++) {
+                this.add(description[i]);
+            }
+        }
+        else if (typeof description === 'object') {
+            var name = description.name;
+
+            if (this.apiIndex[name]) {
+                throw new Error('[jsNative] API exists: ' + name);
+            }
+
+            this.apis.push(description);
+            this.apiIndex[name] = description;
+        }
+
         return this;
     };
 
