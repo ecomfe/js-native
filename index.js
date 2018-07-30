@@ -1,7 +1,26 @@
 (function (root) {
 
-    function jsNative() {
+    function APIContainer() {
+        this.apis = [];
+    }
 
+    APIContainer.prototype.add = function (description) {
+        return this;
+    };
+
+    APIContainer.prototype.fromNative = function (description) {
+        return this;
+    };
+
+    APIContainer.prototype.map = function (mapAPI) {
+        return this;
+    };
+
+    APIContainer.prototype.invoke = function (name, args) {
+    };
+
+    function jsNative() {
+        return new APIContainer();
     }
 
     jsNative.invoke = function (description) {
