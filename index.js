@@ -84,7 +84,7 @@
     };
 
     APIContainer.prototype.fromNative = function (description) {
-        return this;
+        return this.add(jsNative.invoke(description));
     };
 
     APIContainer.prototype.map = function (mapAPI) {
