@@ -283,8 +283,102 @@
         };
     }
 
-    function getProccessors(description) {
+    var INVOKE_SHORTCUT = {
+        'method': [],
+        'method.json': [],
+        'prompt.json': [],
+        'prompt.url': [],
+        'location': [],
+        'iframe': [],
+        'message': []
+    };
 
+    var INVOKE_CALL_MAP = {
+        method: 'CallMethod',
+        prompt: 'CallPrompt',
+        location: 'CallLocation',
+        iframe: 'CallIframe',
+        message: 'CallMessage'
+    };
+
+    var INVOKE_BEFORE_MAP = {
+        JSONStringInTurn: [
+            "ArgFuncArgDecode:JSON",
+            "ArgFuncEncode",
+            "ArgEncode:JSON"
+        ],
+
+        JSONString:[
+            "ArgFuncArgDecode:JSON",
+            "ArgFuncEncode",
+            "ArgEncode:JSON",
+            "ArgAdd:name",
+            "ArgCombine:JSON"
+        ],
+        
+        JSONObject:[
+            "ArgFuncArgDecode:JSON",
+            "ArgFuncEncode",
+            "ArgCombine",
+            "ArgAdd:name"
+        ],
+        
+        URL:[
+            "ArgFuncArgDecode:JSON",
+            "ArgFuncEncode",
+            "ArgEncode:JSON",
+            "ArgCombine:URL"
+        ]
+    };
+
+    function getProccessors(description) {
+        var invoke = description.invoke || [];
+        if (!invoke instanceof Array) {
+            switch (typeof invoke) {
+                case 'string':
+                    invoke = INVOKE_SHORTCUT[invoke] || [];
+                    break;
+
+                case 'object':
+                    invoke = [];
+
+                    if (invoke.check) {
+                        invoke.push('ArgCheck');
+                    }
+
+                    if (invoke.before) {
+                        invoke = invoke.concat(INVOKE_BEFORE_MAP[invoke.before]);
+                    }
+
+                    invoke.push(INVOKE_CALL_MAP[invoke.call]);
+
+                    if (invoke.after === 'JSON') {
+                        invoke.push('ReturnDecode:JSON');
+                    }
+                    break;
+
+                default:
+                    invoke = [];
+
+            }
+        }
+
+        var processors = [];
+        for (var i = 0; i < invoke.length; i++) {
+            var processName = invoke[i];
+            var dotIndex = processName.indexOf('.');
+            var option = null;
+
+            if (dotIndex > 0) {
+                option = processName.slice(dotIndex + 1);
+                processName = processName(0, dotIndex);
+            }
+
+            var processor = Processors[processName](description, option);
+            if (typeof processor === 'function') {
+                processors.push(processor)
+            }
+        }
     }
 
     function jsNative() {
