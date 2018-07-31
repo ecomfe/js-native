@@ -241,19 +241,61 @@
     };
 
     APIContainer.prototype.map = function (mapAPI) {
-        return this;
+        mapAPI = mapAPI || function (name) {
+            return name
+        };
+
+        var apiObject = {};
+
+
+        for (var i = 0; i < this.apis.length; i++) {
+            var api = this.apis[i];
+            var apiName = mapAPIName(mapAPI, api.name);
+
+            if (apiName) {
+                apiObject[apiName] = buildAPIMethod(api);
+            }
+        }
+
+        return apiObject;
     };
 
     APIContainer.prototype.invoke = function (name, args) {
         return jsNative.invoke(this.apiIndex[name], args);
     };
 
+    function mapAPIName(mapAPI, name) {
+        if (typeof mapAPI === 'function') {
+            return mapAPI(name);
+        }
+
+        return mapAPI[name];
+    }
+
+    function buildAPIMethod(description) {
+        var proccessors = getProccessors(description);
+
+        return function () {
+            var args = Array.prototype.slice.call(arguments);
+            for (var i = 0; i < proccessors.length; i++) {
+                args = proccessors[i](args);
+            }
+        };
+    }
+
+    function getProccessors(description) {
+
+    }
+
     function jsNative() {
         return new APIContainer();
     }
 
     jsNative.invoke = function (description, args) {
-
+        var proccessors = getProccessors(description);
+        for (var i = 0; i < proccessors.length; i++) {
+            args = proccessors[i](args);
+        }
     };
 
     this.jsNative = jsNative;
