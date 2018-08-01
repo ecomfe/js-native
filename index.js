@@ -377,92 +377,13 @@
         }
     };
 
-    
-
-
-    function invokeDescription(description) {
-        if (description) {
-            var proccessors = getProccessors(description);
-            for (var i = 0; i < proccessors.length; i++) {
-                args = proccessors[i](args);
-            }
-
-            return args;
-        }
-    }
-
-    function APIContainer() {
-        this.apis = [];
-        this.apiIndex = {};
-    }
-
-    APIContainer.prototype.add = function (description) {
-        if (description instanceof Array) {
-            for (var i = 0; i < description.length; i++) {
-                this.add(description[i]);
-            }
-        }
-        else if (typeof description === 'object') {
-            var name = description.name;
-
-            if (this.apiIndex[name]) {
-                throw new Error('[jsNative] API exists: ' + name);
-            }
-
-            this.apis.push(description);
-            this.apiIndex[name] = description;
-        }
-
-        return this;
-    };
-
-    APIContainer.prototype.fromNative = function (description) {
-        return this.add(invokeDescription(description));
-    };
-
-    APIContainer.prototype.map = function (mapAPI) {
-        mapAPI = mapAPI || function (name) {
-            return name
-        };
-
-        var apiObject = {};
-
-
-        for (var i = 0; i < this.apis.length; i++) {
-            var api = this.apis[i];
-            var apiName = mapAPIName(mapAPI, api.name);
-
-            if (apiName) {
-                apiObject[apiName] = buildAPIMethod(api);
-            }
-        }
-
-        return apiObject;
-    };
-
-    APIContainer.prototype.invoke = function (name, args) {
-        return invokeDescription(this.apiIndex[name]);
-    };
-
-    function mapAPIName(mapAPI, name) {
-        if (typeof mapAPI === 'function') {
-            return mapAPI(name);
-        }
-
-        return mapAPI[name];
-    }
-
-    function buildAPIMethod(description) {
-        var proccessors = getProccessors(description);
-
-        return function () {
-            var args = Array.prototype.slice.call(arguments);
-            for (var i = 0; i < proccessors.length; i++) {
-                args = proccessors[i](args);
-            }
-        };
-    }
-
+    /**
+     * 调用描述对象的 invoke 属性为字符串时的快捷映射表
+     *
+     * @inner
+     * @const
+     * @type {Object}
+     */
     var INVOKE_SHORTCUT = {
         'method': [
             'ArgCheck',
@@ -528,6 +449,13 @@
         ]
     };
 
+    /**
+     * 调用描述对象的 invoke 属性为 Object时，call 字段对应的映射表
+     *
+     * @inner
+     * @const
+     * @type {Object}
+     */
     var INVOKE_CALL_MAP = {
         method: 'CallMethod',
         prompt: 'CallPrompt',
@@ -536,6 +464,13 @@
         message: 'CallMessage'
     };
 
+    /**
+     * 调用描述对象的 invoke 属性为 Object时，before 字段对应的映射表
+     *
+     * @inner
+     * @const
+     * @type {Object}
+     */
     var INVOKE_BEFORE_MAP = {
         JSONStringInTurn: [
             'ArgFuncArgDecode:JSON',
@@ -565,6 +500,13 @@
         ]
     };
 
+    /**
+     * 生成调用过程处理函数的列表
+     *
+     * @inner
+     * @param {Object} description 调用描述对象
+     * @return {Function[]}
+     */
     function getProccessors(description) {
         var invoke = description.invoke || [];
         if (!invoke instanceof Array) {
@@ -614,7 +556,149 @@
             }
         }
     }
+    
+    /**
+     * 通过调用描述对象进行调用
+     *
+     * @inner
+     * @param {Object} description 调用描述对象
+     * @param {Array} args 调用参数
+     * @return {*}
+     */
+    function invokeDescription(description, args) {
+        if (description) {
+            args = args || [];
 
+            var proccessors = getProccessors(description);
+            for (var i = 0; i < proccessors.length; i++) {
+                args = proccessors[i](args);
+            }
+
+            return args;
+        }
+    }
+
+    /**
+     * 调用 API 容器类
+     *
+     * @class
+     */
+    function APIContainer() {
+        this.apis = [];
+        this.apiIndex = {};
+    }
+
+    /**
+     * 添加调用API
+     *
+     * @param {Object|Array} description 调用描述对象
+     * @return {APIContainer}
+     */
+    APIContainer.prototype.add = function (description) {
+        if (description instanceof Array) {
+            for (var i = 0; i < description.length; i++) {
+                this.add(description[i]);
+            }
+        }
+        else if (typeof description === 'object') {
+            var name = description.name;
+
+            if (this.apiIndex[name]) {
+                throw new Error('[jsNative] API exists: ' + name);
+            }
+
+            this.apis.push(description);
+            this.apiIndex[name] = description;
+        }
+
+        return this;
+    };
+
+    /**
+     * 从一次 Native 的调用结果中添加调用API
+     *
+     * @param {Object} description 调用描述对象
+     * @return {APIContainer}
+     */
+    APIContainer.prototype.fromNative = function (description) {
+        return this.add(invokeDescription(description));
+    };
+
+
+    /**
+     * 通过描述对象的 name 属性进行调用
+     *
+     * @param {string} name 调用描述对象名
+     * @param {Array} args 调用参数
+     * @return {*}
+     */
+    APIContainer.prototype.invoke = function (name, args) {
+        return invokeDescription(this.apiIndex[name]);
+    };
+
+    /**
+     * 生成一个对象，其上的方法是 API 容器对象中调用描述对象编译成的，可被直接调用的函数
+     *
+     * @param {Object|Function} mapAPI 调用描述对象名称的映射表或映射函数
+     * @return {Object}
+     */
+    APIContainer.prototype.map = function (mapAPI) {
+        mapAPI = mapAPI || function (name) {
+            return name
+        };
+
+        var apiObject = {};
+
+
+        for (var i = 0; i < this.apis.length; i++) {
+            var api = this.apis[i];
+            var apiName = mapAPIName(mapAPI, api.name);
+
+            if (apiName) {
+                apiObject[apiName] = buildAPIMethod(api);
+            }
+        }
+
+        return apiObject;
+    };
+
+
+    /**
+     * 映射调用对象描述中的名称
+     *
+     * @inner
+     * @param {Object|Function} mapAPI 调用描述对象名称的映射表或映射函数
+     * @param {string} name 调用描述对象中的名称
+     * @return {string}
+     */
+    function mapAPIName(mapAPI, name) {
+        if (typeof mapAPI === 'function') {
+            return mapAPI(name);
+        }
+
+        return mapAPI[name];
+    }
+
+    /**
+     * 把调用描述对象编译成可被直接调用的函数
+     *
+     * @inner
+     * @param {Object} description 调用描述对象
+     * @return {Function}
+     */
+    function buildAPIMethod(description) {
+        var proccessors = getProccessors(description);
+
+        return function () {
+            var args = Array.prototype.slice.call(arguments);
+            for (var i = 0; i < proccessors.length; i++) {
+                args = proccessors[i](args);
+            }
+        };
+    }
+
+    
+    // export ==============
     var jsNative = new APIContainer();
     jsNative.invokeDescription = invokeDescription;
 
