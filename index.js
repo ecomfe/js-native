@@ -211,6 +211,17 @@
     }
 
 
+    function invokeDescription(description) {
+        if (description) {
+            var proccessors = getProccessors(description);
+            for (var i = 0; i < proccessors.length; i++) {
+                args = proccessors[i](args);
+            }
+
+            return args;
+        }
+    }
+
     function APIContainer() {
         this.apis = [];
         this.apiIndex = {};
@@ -237,7 +248,7 @@
     };
 
     APIContainer.prototype.fromNative = function (description) {
-        return this.add(jsNative.invoke(description));
+        return this.add(invokeDescription(description));
     };
 
     APIContainer.prototype.map = function (mapAPI) {
@@ -261,7 +272,7 @@
     };
 
     APIContainer.prototype.invoke = function (name, args) {
-        return jsNative.invoke(this.apiIndex[name], args);
+        return invokeDescription(this.apiIndex[name]);
     };
 
     function mapAPIName(mapAPI, name) {
@@ -435,22 +446,15 @@
         }
     }
 
-    function jsNative() {
-        return new APIContainer();
-    }
+    var jsNative = new APIContainer();
 
-    jsNative.invoke = function (description, args) {
-        var proccessors = getProccessors(description);
-        for (var i = 0; i < proccessors.length; i++) {
-            args = proccessors[i](args);
-        }
-    };
 
-    this.jsNative = jsNative;
+    jsNative.invokeDescription = invokeDescription;
+
+    root.jsNative = jsNative;
 
     // For AMD
     if (typeof define === 'function' && define.amd) {
-        
         define('jsNative', [], jsNative);
     }
 
