@@ -235,7 +235,7 @@ processor-name[:arg]
 
 有的场景对 **调用参数** 只支持传递一个字符串或一个对象。该处理器对 **调用参数** 进行合并。
 
-`参数`：代表合并方式。值为 **JSON** 或 **URL**
+`参数`：代表合并方式。值为 JSONString | Object | URL
 
 当参数的值为  **URL** 时，该处理器会使用描述对象的 `schema`、`authority`、`path` 字段生成完整的 URL。
 
@@ -630,9 +630,8 @@ prompt 调用场景的特点是：
         "ArgCheck",
         "ArgFuncArgDecode:JSON",
         "ArgFuncEncode",
-        "ArgEncode:JSON",
         "ArgAdd:name",
-        "ArgCombine:JSON",
+        "ArgCombine:JSONString",
         "CallPrompt",
         "ReturnDecode:JSON"
     ],
@@ -911,8 +910,8 @@ postMessage 仅 iOS 的 WKWebView 支持，其特点是：
         "ArgCheck",
         "ArgFuncArgDecode:JSON",
         "ArgFuncEncode",
-        "ArgCombine",
         "ArgAdd:name",
+        "ArgCombine:Object",
         "CallMessage"
     ],
     "name": "request",
