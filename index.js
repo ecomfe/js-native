@@ -284,13 +284,68 @@
     }
 
     var INVOKE_SHORTCUT = {
-        'method': [],
-        'method.json': [],
-        'prompt.json': [],
-        'prompt.url': [],
-        'location': [],
-        'iframe': [],
-        'message': []
+        'method': [
+            'ArgCheck',
+            'CallMethod'
+        ],
+
+        'method.json': [
+            'ArgCheck',
+            'ArgFuncArgDecode:JSON',
+            'ArgFuncEncode',
+            'ArgEncode:JSON',
+            'CallMethod',
+            'ReturnDecode:JSON'
+        ],
+
+        'prompt.json': [
+            'ArgCheck',
+            'ArgFuncArgDecode:JSON',
+            'ArgFuncEncode',
+            'ArgAdd:name',
+            'ArgCombine:JSONString',
+            'CallPrompt',
+            'ReturnDecode:JSON'
+        ],
+
+
+        'prompt.url': [
+            'ArgCheck',
+            'ArgFuncArgDecode:JSON',
+            'ArgFuncEncode',
+            'ArgEncode:JSON',
+            'ArgCombine:URL',
+            'CallPrompt',
+            'ReturnDecode:JSON'
+        ],
+
+
+        'location': [
+            'ArgCheck',
+            'ArgFuncArgDecode:JSON',
+            'ArgFuncEncode',
+            'ArgEncode:JSON',
+            'ArgCombine:URL',
+            'CallLocation'
+        ],
+
+        'iframe': [
+            'ArgCheck',
+            'ArgFuncArgDecode:JSON',
+            'ArgFuncEncode',
+            'ArgEncode:JSON',
+            'ArgCombine:URL',
+            'CallIframe'
+        ],
+
+        'message': [
+            'ArgCheck',
+            'ArgFuncArgDecode:JSON',
+            'ArgFuncEncode',
+            'ArgAdd:name',
+            'ArgCombine:Object',
+            'CallMessage'
+        ]
     };
 
     var INVOKE_CALL_MAP = {
@@ -303,31 +358,30 @@
 
     var INVOKE_BEFORE_MAP = {
         JSONStringInTurn: [
-            "ArgFuncArgDecode:JSON",
-            "ArgFuncEncode",
-            "ArgEncode:JSON"
+            'ArgFuncArgDecode:JSON',
+            'ArgFuncEncode',
+            'ArgEncode:JSON'
         ],
 
         JSONString:[
-            "ArgFuncArgDecode:JSON",
-            "ArgFuncEncode",
-            "ArgEncode:JSON",
-            "ArgAdd:name",
-            "ArgCombine:JSON"
+            'ArgFuncArgDecode:JSON',
+            'ArgFuncEncode',
+            'ArgAdd:name',
+            'ArgCombine:JSONString'
         ],
         
         JSONObject:[
-            "ArgFuncArgDecode:JSON",
-            "ArgFuncEncode",
-            "ArgCombine",
-            "ArgAdd:name"
+            'ArgFuncArgDecode:JSON',
+            'ArgFuncEncode',
+            'ArgAdd:name',
+            'ArgCombine:Object'
         ],
         
         URL:[
-            "ArgFuncArgDecode:JSON",
-            "ArgFuncEncode",
-            "ArgEncode:JSON",
-            "ArgCombine:URL"
+            'ArgFuncArgDecode:JSON',
+            'ArgFuncEncode',
+            'ArgEncode:JSON',
+            'ArgCombine:URL'
         ]
     };
 
