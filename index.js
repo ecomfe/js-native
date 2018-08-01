@@ -1,14 +1,36 @@
 (function (root) {
 
+    /**
+     * 返回原值的方法，调用过程的兜底处理函数
+     *
+     * @inner
+     * @param {*} source
+     * @return {*}
+     */
     function returnRaw(source) {
         return source;
     }
 
+
+    /**
+     * 参数检查，错误直接抛出异常
+     *
+     * @inner
+     * @param {Array} args 调用参数
+     * @param {Array} declaration 参数声明列表
+     * @return {Array}
+     */
     function checkArgs(args, declaration) {
 
     }
 
-
+    /**
+     * 对调用参数中的所有回调函数，进行参数解码（反序列化）包装
+     *
+     * @inner
+     * @param {Array} args 调用参数
+     * @return {Array}
+     */
     function wrapDecodeFuncArgs(args) {
         for (var i = 0; i < args.length; i++) {
             if (typeof args[i] === 'function') {
@@ -19,12 +41,26 @@
         return args;
     }
 
+    /**
+     * 对回调函数的参数进行解码（反序列化）包装
+     *
+     * @inner
+     * @param {Function} fn 回调函数
+     * @return {Function}
+     */
     function wrapDecpdeFuncArg(fn) {
         return function (arg) {
             fn(JSON.parse(arg));
         };
     }
 
+    /**
+     * 对调用参数中的所有回调函数，进行序列化包装
+     *
+     * @inner
+     * @param {Array} args 调用参数
+     * @return {Array}
+     */
     function wrapArgFunc(args) {
         for (var i = 0; i < args.length; i++) {
             if (typeof args[i] === 'function') {
@@ -35,9 +71,30 @@
         return args;
     }
 
+    /**
+     * 用于回调函数包装命名的自增id
+     *
+     * @inner
+     * @type {number}
+     */
     var funcId = 1;
+
+    /**
+     * 用于回调函数包装命名的前缀
+     *
+     * @inner
+     * @const
+     * @type {string}
+     */
     var FUNC_PREFIX = '__jsna_';
 
+    /**
+     * 对回调函数，进行序列化包装
+     *
+     * @inner
+     * @param {Function} fn 回调函数
+     * @return {string}
+     */
     function wrapFunc(fn) {
         var funcName = FUNC_PREFIX + (funcId++);
 
@@ -49,8 +106,14 @@
         return funcName;
     }
 
-
-    function argEncode(args) {
+    /**
+     * 对调用参数中的所有参数进行JSON序列化
+     *
+     * @inner
+     * @param {Array} args 调用参数
+     * @return {Array}
+     */
+    function argJSONEncode(args) {
         for (var i = 0; i < args.length; i++) {
             args[i] = JSON.stringify(args[i]);
         }
@@ -58,6 +121,13 @@
         return args;
     }
 
+    /**
+     * 将调用参数合并成对象
+     *
+     * @inner
+     * @param {Array} args 调用参数
+     * @return {Object}
+     */
     function argCombine(args, declaration) {
         var result = {};
 
@@ -71,32 +141,103 @@
         return result;
     }
 
+    /**
+     * 通过 prompt 对话框进行 Native 调用
+     *
+     * @inner
+     * @param {string} source 要传递的数据字符串
+     * @return {string}
+     */
+    function callPrompt(source) {
+        return root.prompt(source);
+    }
+
+    /**
+     * 通过 location.href 进行 Native 调用
+     *
+     * @inner
+     * @param {string} url 要传递的url字符串
+     */
+    function callLocation(url) {
+        root.location.href = url;
+    }
+
+    /**
+     * 通过 iframe 进行 Native 调用
+     *
+     * @inner
+     * @param {string} url 要传递的url字符串
+     */
+    function callIframe(url) {
+        var iframe = document.createElement('iframe');
+        iframe.src = url;
+        document.body.appendChild(iframe);
+        document.body.removeChild(iframe);
+    }
 
 
-    var Processors = {
-        ArgCheck: function (description, option) {
+    /**
+     * processor 创建方法集合
+     *
+     * @inner
+     * @type {Object}
+     */
+    var processorCreators = {
+        /**
+         * 创建参数检查处理函数
+         *
+         * @param {Object} description 调用描述对象
+         * @return {Function}
+         */
+        ArgCheck: function (description) {
             return function (args) {
                 checkArgs(args, description.args);
                 return args;
             };
         },
 
+        /**
+         * 创建解码回调函数参数包装的处理函数
+         *
+         * @param {Object} description 调用描述对象
+         * @param {string} option 处理参数
+         * @return {Function}
+         */
         ArgFuncArgDecode: function (description, option) {
             return option === 'JSON'
                 ? wrapDecodeFuncArgs
                 : returnRaw;
         },
         
-        ArgFuncEncode: function (description, option) {
+        /**
+         * 创建回调函数序列化的处理函数
+         *
+         * @return {Function}
+         */
+        ArgFuncEncode: function () {
             return wrapArgFunc;
         },
         
+        /**
+         * 创建参数序列化的处理函数
+         *
+         * @param {Object} description 调用描述对象
+         * @param {string} option 处理参数
+         * @return {Function}
+         */
         ArgEncode: function (description, option) {
             return option === 'JSON'
-                ? argEncode
+                ? argJSONEncode
                 : returnRaw;
         },
         
+        /**
+         * 创建从调用描述对象中添加额外参数的处理函数
+         *
+         * @param {Object} description 调用描述对象
+         * @param {string} option 处理参数
+         * @return {Function}
+         */
         ArgAdd: function (description, option) {
             var argLen = description.args.length;
 
@@ -111,6 +252,13 @@
             };
         },
         
+        /**
+         * 创建参数合并的处理函数
+         *
+         * @param {Object} description 调用描述对象
+         * @param {string} option 处理参数
+         * @return {Function}
+         */
         ArgCombine: function (description, option) {
             switch (option) {
                 case 'URL':
@@ -121,7 +269,7 @@
                         for (var i = 0; i < declaration.length; i++) {
                             var arg = args[i];
                             if (arg != null) {
-                                result.push(declaration[i].name + '=' + arg);
+                                result.push(declaration[i].name + '=' + encodeURIComponent(arg));
                             }
                         }
 
@@ -142,6 +290,13 @@
             return returnRaw;
         },
         
+        /**
+         * 创建方法调用的处理函数
+         *
+         * @param {Object} description 调用描述对象
+         * @param {string} option 处理参数
+         * @return {Function}
+         */
         CallMethod: function (description, option) {
             var method;
             function findMethod() {
@@ -169,24 +324,52 @@
             };
         },
         
+        /**
+         * 创建 prompt 调用的处理函数
+         *
+         * @return {Function}
+         */
         CallPrompt: function () {
             return callPrompt;
         },
         
-        CallIframe: function (description, option) {
+        /**
+         * 创建 iframe 调用的处理函数
+         *
+         * @return {Function}
+         */
+        CallIframe: function () {
             return callIframe;
         },
         
-        CallLocation: function (description, option) {
+        /**
+         * 创建 location 调用的处理函数
+         *
+         * @return {Function}
+         */
+        CallLocation: function () {
             return callLocation;
         },
         
-        CallMessage: function (description, option) {
+        /**
+         * 创建 postMessage 调用的处理函数
+         *
+         * @param {Object} description 调用描述对象
+         * @return {Function}
+         */
+        CallMessage: function (description) {
             return function (args) {
                 root.webkit.messageHandlers[description.handler].postMessage(args);
             };
         },
         
+        /**
+         * 创建对返回值进行解码的处理函数
+         *
+         * @param {Object} description 调用描述对象
+         * @param {string} option 处理参数
+         * @return {Function}
+         */
         ReturnDecode: function (description, option) {
             return option === 'JSON'
                 ? JSON.parse
@@ -194,21 +377,7 @@
         }
     };
 
-    function callPrompt(source) {
-        return root.prompt(source);
-    }
-
-    function callLocation(url) {
-        root.location.href = url;
-    }
-
-    function callIframe(url) {
-        var iframe = document.createElement('iframe');
-        iframe.src = url;
-        document.body.appendChild(iframe);
-
-        document.body.removeChild(iframe);
-    }
+    
 
 
     function invokeDescription(description) {
@@ -439,7 +608,7 @@
                 processName = processName(0, dotIndex);
             }
 
-            var processor = Processors[processName](description, option);
+            var processor = processorCreators[processName](description, option);
             if (typeof processor === 'function') {
                 processors.push(processor)
             }
@@ -447,8 +616,6 @@
     }
 
     var jsNative = new APIContainer();
-
-
     jsNative.invokeDescription = invokeDescription;
 
     root.jsNative = jsNative;
