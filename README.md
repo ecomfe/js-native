@@ -15,7 +15,7 @@ jsNative 是一个 JavaScript 与 Native 通信管理的库。其基于 [通信�
 
 
 ```js
-let apiList = jsNative.invoke({
+let apiList = jsNative.invokeAPI({
     "invoke": "method.json",
     "name": "na.getAPIs",
     "method": "_na.getAPIs"
@@ -23,32 +23,31 @@ let apiList = jsNative.invoke({
 ```
 
 
-jsNative 调用后得到一个 api 容器对象，该对象可以添加接口描述。
+jsNative 是一个默认的 api 容器对象，通过 `add` 方法可以添加接口描述。
 
 ```js
-let apiContainer = jsNative()
-    .add({
-        "invoke": "method.json",
-        "name": "net.request",
-        "method": "_naNet.request",
-        "args": [
-            {"name": "url", "value": "string"},
-            {"name": "method", "value": "string"},
-            {"name": "onsuccess", "value": "function"}
-        ]
-    });
+jsNative.add({
+    "invoke": "method.json",
+    "name": "net.request",
+    "method": "_naNet.request",
+    "args": [
+        {"name": "url", "value": "string"},
+        {"name": "method", "value": "string"},
+        {"name": "onsuccess", "value": "function"}
+    ]
+});
 ```
 
-api 容器可以使用 `invoke` 方法调用 api。
+api 容器对象上，可以使用 `invoke` 方法调用 api。
 
 ```js
-apiContainer.invoke('request', ['my-url', 'GET', data => {}]);
+jsNative.invoke('net.request', ['my-url', 'GET', data => {}]);
 ```
 
-api 容器通过 `map` 方法可以生成一个对象，对象上包含接口直接调用的方法。
+api 容器对象上，通过 `map` 方法可以生成一个对象，对象上包含接口直接调用的方法。
 
 ```js
-let mod = jsNative()
+let mod = jsNative
     .add({
         "invoke": "method.json",
         "name": "net.request",
@@ -60,16 +59,16 @@ let mod = jsNative()
         ]
     })
     .map({
-        request: 'fetch'
+        'net.request': 'fetch'
     });
 
 mod.fetch('my-url', 'GET', data => {});
 ```
 
-api 容器可以使用 `fromNative` 方法直接从一个 **返回所有接口描述信息的接口** 获取接口并添加。
+api 容器对象上，可以使用 `fromNative` 方法直接从一个 **返回所有接口描述信息的接口** 获取接口并添加。
 
 ```js
-let mod = jsNative()
+let mod = jsNative
     .fromNative({
         "invoke": "method",
         "name": "na.getAPIs",
@@ -79,11 +78,42 @@ let mod = jsNative()
 ```
 
 
+当你不想使用默认的 api 容器对象，或者需要多个 api 容器对象时，可以使用 `createContainer` 方法创建新的 api 容器对象。
 
+```js
+let apiContainer = jsNative.createContainer();
+```
+
+新的 api 容器对象上拥有 `add' 、`fromNative`、`invoke`、`map` 方法，你可以正常使用它。
+
+```js
+let mod = jsNative
+    .createContainer()
+    .add({
+        "invoke": "method.json",
+        "name": "net.request",
+        "method": "_naNet.request",
+        "args": [
+            {"name": "url", "value": "string"},
+            {"name": "method", "value": "string"},
+            {"name": "onsuccess", "value": "function"}
+        ]
+    })
+    .map({
+        'net.request': 'fetch'
+    });
+
+mod.fetch('my-url', 'GET', data => {});
+```
 
 ## API
 
 ### jsNative
 
 
-### jsNative.invoke
+### jsNative.createContainer
+
+### jsNative.invokeAPI
+
+
+### APIContainer
