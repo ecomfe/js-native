@@ -697,11 +697,33 @@
         };
     }
 
+    // export object ==============
     
-    // export ==============
+    /**
+     * 默认的 API Container 实例
+     *
+     * @type {APIContainer}
+     */
     var jsNative = new APIContainer();
+
+    /**
+     * 通过调用描述对象进行调用
+     *
+     * @param {Object} description 调用描述对象
+     * @param {Array} args 调用参数
+     */
     jsNative.invokeDescription = invokeDescription;
 
+    /**
+     * 创建 API Container
+     *
+     * @return {APIContainer}
+     */
+    jsNative.createContainer = function () {
+        return new APIContainer();
+    };
+
+    // export ==============
     root.jsNative = jsNative;
 
     // For AMD
