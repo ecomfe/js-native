@@ -1,6 +1,23 @@
 (function (root) {
 
     /**
+     * 对数组进行遍历
+     *
+     * @inner
+     * @param {Array} array 要遍历的数组
+     * @param {Function} fn 遍历函数
+     */
+    function each(array, fn) {
+        var len = array && array.length || 0;
+
+        for (var i = 0, l = len; i < l; i++) {
+            if (fn(array[i]， i) === false) {
+                break;
+            }
+        }
+    }
+
+    /**
      * 返回原值的方法，调用过程的兜底处理函数
      *
      * @inner
@@ -32,11 +49,11 @@
      * @return {Array}
      */
     function wrapDecodeFuncArgs(args) {
-        for (var i = 0; i < args.length; i++) {
-            if (typeof args[i] === 'function') {
-                args[i] = wrapDecpdeFuncArg(args[i]);
+        each（args, function (arg, i) {
+            if (typeof arg === 'function') {
+                args[i] = wrapDecpdeFuncArg(arg);
             }
-        }
+        });
 
         return args;
     }
@@ -62,11 +79,11 @@
      * @return {Array}
      */
     function wrapArgFunc(args) {
-        for (var i = 0; i < args.length; i++) {
-            if (typeof args[i] === 'function') {
-                args[i] = wrapFunc(args[i]);
+        each（args, function (arg, i) {
+            if (typeof arg === 'function') {
+                args[i] = wrapFunc(arg);
             }
-        }
+        });
 
         return args;
     }
@@ -114,9 +131,11 @@
      * @return {Array}
      */
     function argJSONEncode(args) {
-        for (var i = 0; i < args.length; i++) {
-            args[i] = JSON.stringify(args[i]);
-        }
+        each（args, function (arg, i) {
+            if (typeof arg === 'function') {
+                args[i] = JSON.stringify(arg);
+            }
+        });
 
         return args;
     }
@@ -131,12 +150,12 @@
     function argCombine(args, declaration) {
         var result = {};
 
-        for (var i = 0; i < declaration.length; i++) {
+        each（declaration, function (argDeclaration, i) {
             var arg = args[i];
             if (arg != null) {
-                result[declaration[i].name] = arg;
+                result[argDeclaration.name] = arg;
             }
-        }
+        });
 
         return result;
     }
@@ -266,12 +285,12 @@
                     return function (args) {
                         var result = [];
 
-                        for (var i = 0; i < declaration.length; i++) {
+                        each（declaration, function (argDeclaration, i) {
                             var arg = args[i];
                             if (arg != null) {
-                                result.push(declaration[i].name + '=' + encodeURIComponent(arg));
+                                result.push(argDeclaration.name + '=' + encodeURIComponent(arg));
                             }
-                        }
+                        });
 
                         return result.join('&');
                     };
@@ -569,10 +588,9 @@
         if (description) {
             args = args || [];
 
-            var proccessors = getProccessors(description);
-            for (var i = 0; i < proccessors.length; i++) {
-                args = proccessors[i](args);
-            }
+            each(getProccessors(description), function (proccessor) {
+                arg = proccessor(arg);
+            });
 
             return args;
         }
@@ -691,9 +709,11 @@
 
         return function () {
             var args = Array.prototype.slice.call(arguments);
-            for (var i = 0; i < proccessors.length; i++) {
-                args = proccessors[i](args);
-            }
+            each(proccessors, function (proccessor) {
+                args = proccessor(args);
+            });
+
+            return args;
         };
     }
 
