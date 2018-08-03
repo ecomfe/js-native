@@ -34,11 +34,148 @@
      *
      * @inner
      * @param {Array} args 调用参数
-     * @param {Array} declaration 参数声明列表
+     * @param {Array} declarations 参数声明列表
      * @return {Array}
      */
-    function checkArgs(args, declaration) {
+    function checkArgs(args, declarations) {
+        each(declarations, function (declaration, i) {
+            var errorMsg;
 
+            switch (checkValue(args[i], declaration)) {
+                case 1:
+                    errorMsg = ' is required.';
+                    break;
+
+                case 2:
+                    errorMsg = ' type error. must be ' + JSON.stringify(declaration.type || 'Array');
+                    break;
+
+                case 3:
+                    errorMsg = ' type error, must be oneOf ' + JSON.stringify(declaration.oneOf);
+                    break;
+
+                case 4:
+                    errorMsg = ' type error, must be oneOfType ' + JSON.stringify(declaration.oneOfType);
+                    break;
+
+                case 5:
+                    errorMsg = ' type error, must be arrayOf ' + JSON.stringify(declaration.arrayOf);
+                    break;
+            }
+
+            if (errorMsg) {
+                throw new Error('[jsNative Argument Error]' + declaration.name + errorMsg);
+            }
+        });
+    }
+
+    /**
+     * 对参数值进行检查
+     *
+     * @inner
+     * @param {*} value 值
+     * @param {Object} declaration 值声明
+     * @return {number}
+     */
+    function checkValue(value, declaration) {
+        if (value == null && declaration.isRequired) {
+            return 1;
+        }
+
+
+        var valid = false;
+        switch (typeof declaration.type) {
+            case 'string':
+                switch (declaration.type) {
+                    case 'string':
+                    case 'boolean':
+                    case 'number':
+                    case 'function':
+                    case 'object':
+                        valid = typeof value === declaration.type;
+                        break;
+
+                    case 'Object':
+                        valid = typeof value === 'object';
+                        break;
+
+                    case 'Array':
+                        valid = value instanceof Array;
+                        break;
+
+                    case '*':
+                        valid = true;
+                        break;
+                }
+
+                if (!valid) {
+                    return 2;
+                }
+                break;
+
+            case 'object':
+                if (value && typeof value === 'object') {
+                    valid = true;
+                    for (var key in declaration.type) {
+                        valid = !checkValue(value[key], declaration.type[key]);
+
+                        if (!valid) {
+                            break;
+                        }
+                    }
+                }
+
+                if (!valid) {
+                    return 2;
+                }
+                break;
+
+            default:
+
+                if (declaration.oneOf) {
+
+                    each(declaration.oneOf, function (expectValue, value) {
+                        valid = expectValue === value;
+                        return !valid;
+                    });
+
+                    if (!valid) {
+                        return 3;
+                    }
+
+                }
+                else if (declaration.oneOfType) {
+
+                    each(declaration.oneOf, function (expectType, value) {
+                        valid = !checkValue(value, expectType);
+                        return !valid;
+                    });
+
+                    if (!valid) {
+                        return 4;
+                    }
+
+                }
+                else if (declaration.arrayOf) {
+
+                    if (!(value instanceof Array)) {
+                        return 2;
+                    }
+
+                    valid = true;
+                    each(value, function (item) {
+                        valid = checkValue(item, declaration.arrayOf);
+                        return valid;
+                    });
+
+                    if (!valid) {
+                        return 5;
+                    }
+
+                }
+        }
+
+        return 0;
     }
 
     /**
@@ -49,7 +186,7 @@
      * @return {Array}
      */
     function wrapDecodeFuncArgs(args) {
-        each（args, function (arg, i) {
+        each(args, function (arg, i) {
             if (typeof arg === 'function') {
                 args[i] = wrapDecpdeFuncArg(arg);
             }
@@ -79,7 +216,7 @@
      * @return {Array}
      */
     function wrapArgFunc(args) {
-        each（args, function (arg, i) {
+        each(args, function (arg, i) {
             if (typeof arg === 'function') {
                 args[i] = wrapFunc(arg);
             }
@@ -131,7 +268,7 @@
      * @return {Array}
      */
     function argJSONEncode(args) {
-        each（args, function (arg, i) {
+        each(args, function (arg, i) {
             if (typeof arg === 'function') {
                 args[i] = JSON.stringify(arg);
             }
@@ -147,13 +284,13 @@
      * @param {Array} args 调用参数
      * @return {Object}
      */
-    function argCombine(args, declaration) {
+    function argCombine(args, declarations) {
         var result = {};
 
-        each（declaration, function (argDeclaration, i) {
+        each(declarations, function (declaration, i) {
             var arg = args[i];
             if (arg != null) {
-                result[argDeclaration.name] = arg;
+                result[declaration.name] = arg;
             }
         });
 
@@ -285,10 +422,10 @@
                     return function (args) {
                         var result = [];
 
-                        each（declaration, function (argDeclaration, i) {
+                        each(description.args, function (declaration, i) {
                             var arg = args[i];
                             if (arg != null) {
-                                result.push(argDeclaration.name + '=' + encodeURIComponent(arg));
+                                result.push(declaration.name + '=' + encodeURIComponent(arg));
                             }
                         });
 
