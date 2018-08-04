@@ -665,10 +665,10 @@
      */
     function getProccessors(description) {
         var processors = [];
-        for (var i = 0; i < invoke.length; i++) {
-            var processName = invoke[i];
+
+        each(description.invoke, function (processName) {
             var dotIndex = processName.indexOf('.');
-            var option = null;
+            var option;
 
             if (dotIndex > 0) {
                 option = processName.slice(dotIndex + 1);
@@ -679,7 +679,9 @@
             if (typeof processor === 'function') {
                 processors.push(processor)
             }
-        }
+        });
+
+        return processors;
     }
     
     /**
