@@ -664,37 +664,6 @@
      * @return {Function[]}
      */
     function getProccessors(description) {
-        var invoke = description.invoke || [];
-        if (!invoke instanceof Array) {
-            switch (typeof invoke) {
-                case 'string':
-                    invoke = INVOKE_SHORTCUT[invoke] || [];
-                    break;
-
-                case 'object':
-                    invoke = [];
-
-                    if (invoke.check) {
-                        invoke.push('ArgCheck');
-                    }
-
-                    if (invoke.before) {
-                        invoke = invoke.concat(INVOKE_BEFORE_MAP[invoke.before]);
-                    }
-
-                    invoke.push(INVOKE_CALL_MAP[invoke.call]);
-
-                    if (invoke.after === 'JSON') {
-                        invoke.push('ReturnDecode:JSON');
-                    }
-                    break;
-
-                default:
-                    invoke = [];
-
-            }
-        }
-
         var processors = [];
         for (var i = 0; i < invoke.length; i++) {
             var processName = invoke[i];
@@ -762,12 +731,58 @@
                 throw new Error('[jsNative] API exists: ' + name);
             }
 
-            this.apis.push(description);
-            this.apiIndex[name] = description;
+            var realDesc = {
+                name: description.name,
+                args: (description.args || []).slice(0),
+                invoke: normalizeInvoke(description.invoke)
+            };
+
+            this.apis.push(realDesc);
+            this.apiIndex[name] = realDesc;
         }
 
         return this;
     };
+
+    /**
+     * 对 description 中的 invoke 属性进行标准化处理
+     *
+     * @inner
+     * @param {Array|Object|string} description的invoke属性
+     * @return {Array}
+     */
+    function normalizeInvoke(invoke) {
+        if (invoke instanceof Array) {
+            return invoke;
+        }
+
+        switch (typeof invoke) {
+            case 'string':
+                return INVOKE_SHORTCUT[invoke] || [];
+
+            case 'object':
+                var result = [];
+
+                if (invoke.check) {
+                    result.push('ArgCheck');
+                }
+
+                if (invoke.before) {
+                    result = result.concat(INVOKE_BEFORE_MAP[invoke.before]);
+                }
+
+                result.push(INVOKE_CALL_MAP[invoke.call]);
+
+                if (invoke.after === 'JSON') {
+                    result.push('ReturnDecode:JSON');
+                }
+                
+                return result;
+
+        }
+
+        return [];
+    }
 
     /**
      * 从一次 Native 的调用结果中添加调用API
@@ -854,7 +869,8 @@
         };
     }
 
-    // export object ==============
+    // export object ===========
+    ===
     
     /**
      * 默认的 API Container 实例
