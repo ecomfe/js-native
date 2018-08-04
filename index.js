@@ -41,6 +41,7 @@
         each(declarations, function (declaration, i) {
             var errorMsg;
 
+            declaration = normalizeValueDeclaration(declaration);
             switch (checkValue(args[i], declaration)) {
                 case 1:
                     errorMsg = ' is required.';
@@ -70,6 +71,40 @@
     }
 
     /**
+     * 对值声明进行标准化处理
+     *
+     * @inner
+     * @param {Object|string} 值声明
+     * @return {Object}
+     */
+    function normalizeValueDeclaration(declaration) {
+        if (typeof declaration === 'string') {
+            var realDeclaration = {isRequired: true};
+
+
+            if (/=$/.test(declaration)) {
+                realDeclaration.isRequired = false;
+                declaration = declaration.slice(0, declaration.length - 1);
+            }
+
+            if (/\[\]$/.test(declaration)) {
+                realDeclaration.arrayOf = declaration.slice(0, declaration.length - 2);
+            }
+            else if (declaration.indexOf('|') > 0) {
+                realDeclaration.oneOfType = declaration.split('|');
+            }
+            else {
+                realDeclaration.type = declaration;
+            }
+
+            return realDeclaration;
+        }
+
+        return declaration;
+    }
+
+
+    /**
      * 对参数值进行检查
      *
      * @inner
@@ -78,6 +113,7 @@
      * @return {number}
      */
     function checkValue(value, declaration) {
+        declaration = normalizeValueDeclaration(declaration);
         if (value == null && declaration.isRequired) {
             return 1;
         }
