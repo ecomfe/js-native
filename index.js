@@ -490,29 +490,31 @@
          * @return {Function}
          */
         CallMethod: function (description, option) {
-            var method;
+            var methodOwner;
+            var methodName;
             function findMethod() {
-                if (!method) {
+                if (!methodOwner) {
                     var segs = description.method.split('.');
-                    method = root;
-                    for (var i = 0; i < segs.length; i++) {
-                        method = method[segs[i]];
+                    var lastIndex = segs.length - 1;
+
+                    methodName = segs[lastIndex];
+                    methodOwner = root;
+                    for (var i = 0; i < lastIndex; i++) {
+                        methodOwner = methodOwner[segs[i]];
                     }
                 }
-
-                return method;
             }
 
             if (description.args.length < 5) {
                 return function (args) {
-                    var fn = findMethod;
-                    fn(args[0], args[1], args[2], args[3]);
+                    findMethod();
+                    methodOwner[methodName](args[0], args[1], args[2], args[3]);
                 };
             }
 
             return function (args) {
-                var fn = findMethod;
-                fn.apply(root, args);
+                findMethod();
+                methodOwner[methodName].apply(methodOwner, args);
             };
         },
         
