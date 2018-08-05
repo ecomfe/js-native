@@ -897,13 +897,35 @@
     function buildAPIMethod(description) {
         var processors = getProcessors(description);
 
-        return function () {
-            var args = Array.prototype.slice.call(arguments);
+        function process(arg) {
             each(processors, function (processor) {
                 args = processor(args);
             });
 
             return args;
+        }
+
+        switch (description.args.length) {
+            case 0:
+                return function () {
+                    return process([]);
+                }
+            case 1:
+                return function (arg1) {
+                    return process([arg1]);
+                }
+            case 2:
+                return function (arg1, arg2) {
+                    return process([arg1, arg2]);
+                }
+            case 3:
+                return function (arg1, arg2, arg3) {
+                    return process([arg1, arg2, arg3]);
+                }
+        }
+
+        return function () {
+            return process(Array.prototype.slice.call(arguments));
         };
     }
 
