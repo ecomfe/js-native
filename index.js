@@ -699,7 +699,7 @@
      * @param {Object} description 调用描述对象
      * @return {Function[]}
      */
-    function getProccessors(description) {
+    function getProcessors(description) {
         var processors = [];
 
         each(description.invoke, function (processName) {
@@ -732,8 +732,8 @@
         if (description) {
             args = args || [];
 
-            each(getProccessors(description), function (proccessor) {
-                arg = proccessor(arg);
+            each(getProcessors(description), function (processor) {
+                arg = processor(arg);
             });
 
             return args;
@@ -895,12 +895,12 @@
      * @return {Function}
      */
     function buildAPIMethod(description) {
-        var proccessors = getProccessors(description);
+        var processors = getProcessors(description);
 
         return function () {
             var args = Array.prototype.slice.call(arguments);
-            each(proccessors, function (proccessor) {
-                args = proccessor(args);
+            each(processors, function (processor) {
+                args = processor(args);
             });
 
             return args;
