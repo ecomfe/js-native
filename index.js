@@ -11,7 +11,7 @@
         var len = array && array.length || 0;
 
         for (var i = 0, l = len; i < l; i++) {
-            if (fn(array[i]， i) === false) {
+            if (fn(array[i], i) === false) {
                 break;
             }
         }
@@ -932,7 +932,6 @@
     }
 
     // export object ===========
-    ===
     
     /**
      * 默认的 API Container 实例
