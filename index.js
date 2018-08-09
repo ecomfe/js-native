@@ -965,4 +965,8 @@
         define('jsNative', [], jsNative);
     }
 
-})(this);
+})(
+    typeof global === 'undefined'
+        ? this
+        : global
+);
