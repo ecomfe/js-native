@@ -22,11 +22,36 @@ describe('Export Object', () => {
 
 
 describe('APIContainer', () => {
+    let tAPI = {};
+    global.tAPI = tAPI;
+
+
+    let apis;
+    before(() => {
+        apis = jsNative.createContainer();
+    });
+
     it('instancing by createContainer', () => {
-        let apiContainer = jsNative.createContainer();
-        expect(apiContainer.add).to.be.a('function');
-        expect(apiContainer.map).to.be.a('function');
-        expect(apiContainer.invoke).to.be.a('function');
-        expect(apiContainer.fromNative).to.be.a('function');
+        expect(apis.add).to.be.a('function');
+        expect(apis.map).to.be.a('function');
+        expect(apis.invoke).to.be.a('function');
+        expect(apis.fromNative).to.be.a('function');
+    });
+
+    it('can invoke after add', () => {
+        let invoked = false;
+
+        apis.add({
+            "invoke": "method",
+            "name": "api1",
+            "method": "tAPI.api1"
+        });
+        tAPI.api1 = () => {
+            invoked = true;
+        };
+        apis.invoke('api1');
+
+
+        expect(invoked).to.be.true;
     });
 });
