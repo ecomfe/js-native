@@ -735,7 +735,7 @@
             args = args || [];
 
             each(getProcessors(description), function (processor) {
-                arg = processor(arg);
+                args = processor(args);
             });
 
             return args;
@@ -774,7 +774,12 @@
             var realDesc = {
                 name: description.name,
                 args: (description.args || []).slice(0),
-                invoke: normalizeInvoke(description.invoke)
+                invoke: normalizeInvoke(description.invoke),
+                method: description.method,
+                schema: description.schema,
+                authority: description.authority,
+                path: description.path,
+                handler: description.handler
             };
 
             this.apis.push(realDesc);
