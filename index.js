@@ -848,7 +848,7 @@
      * @return {*}
      */
     APIContainer.prototype.invoke = function (name, args) {
-        return invokeDescription(this.apiIndex[name]);
+        return invokeDescription(this.apiIndex[name], args);
     };
 
     /**
