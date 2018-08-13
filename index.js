@@ -40,27 +40,27 @@
     function checkArgs(args, declarations) {
         each(declarations, function (declaration, i) {
             var errorMsg;
+            var value = normalizeValueDeclaration(declaration.value);
 
-            declaration = normalizeValueDeclaration(declaration);
-            switch (checkValue(args[i], declaration)) {
+            switch (checkValue(args[i], value)) {
                 case 1:
                     errorMsg = ' is required.';
                     break;
 
                 case 2:
-                    errorMsg = ' type error. must be ' + JSON.stringify(declaration.type || 'Array');
+                    errorMsg = ' type error. must be ' + JSON.stringify(value.type || 'Array');
                     break;
 
                 case 3:
-                    errorMsg = ' type error, must be oneOf ' + JSON.stringify(declaration.oneOf);
+                    errorMsg = ' type error, must be oneOf ' + JSON.stringify(value.oneOf);
                     break;
 
                 case 4:
-                    errorMsg = ' type error, must be oneOfType ' + JSON.stringify(declaration.oneOfType);
+                    errorMsg = ' type error, must be oneOfType ' + JSON.stringify(value.oneOfType);
                     break;
 
                 case 5:
-                    errorMsg = ' type error, must be arrayOf ' + JSON.stringify(declaration.arrayOf);
+                    errorMsg = ' type error, must be arrayOf ' + JSON.stringify(value.arrayOf);
                     break;
             }
 
@@ -114,8 +114,8 @@
      */
     function checkValue(value, declaration) {
         declaration = normalizeValueDeclaration(declaration);
-        if (value == null && declaration.isRequired) {
-            return 1;
+        if (value == null) {
+            return declaration.isRequired ? 1 : 0;
         }
 
 
@@ -170,7 +170,7 @@
 
                 if (declaration.oneOf) {
 
-                    each(declaration.oneOf, function (expectValue, value) {
+                    each(declaration.oneOf, function (expectValue) {
                         valid = expectValue === value;
                         return !valid;
                     });
@@ -182,7 +182,7 @@
                 }
                 else if (declaration.oneOfType) {
 
-                    each(declaration.oneOf, function (expectType, value) {
+                    each(declaration.oneOfType, function (expectType) {
                         valid = !checkValue(value, expectType);
                         return !valid;
                     });
@@ -194,18 +194,18 @@
                 }
                 else if (declaration.arrayOf) {
 
-                    if (!(value instanceof Array)) {
-                        return 2;
+                    if (value instanceof Array) {
+                        valid = true;
+                        each(value, function (item) {
+                            return (valid = !checkValue(item, declaration.arrayOf));
+                        });
+
+                        if (!valid) {
+                            return 5;
+                        }
                     }
-
-                    valid = true;
-                    each(value, function (item) {
-                        valid = checkValue(item, declaration.arrayOf);
-                        return valid;
-                    });
-
-                    if (!valid) {
-                        return 5;
+                    else {
+                        return 2;
                     }
 
                 }
