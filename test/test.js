@@ -585,3 +585,98 @@ describe('Processor ArgCheck', () => {
 
     });
 });
+
+
+describe('Processor ArgFuncArgDecode', () => {
+    let tp1API = {};
+    global.tp1API = tp1API;
+
+
+    let apis;
+    before(() => {
+        apis = jsNative.createContainer();
+    });
+
+    it('auto decode JSON string to Object', () => {
+        let sum = 0;
+
+        apis.add({
+            invoke: ['ArgFuncArgDecode:JSON', "CallMethod"],
+            name: "api1",
+            method: "tp1API.api1",
+            args: [
+                {name: 'one', type: 'number'},
+                {name: 'two', type: 'function'}
+            ]
+        });
+        tp1API.api1 = (one, two) => {
+            expect(one).to.be.a('number');
+            expect(two).to.be.a('function');
+
+            two(JSON.stringify({one: 1, two: [2, 3], three: '3', four: true}));
+        };
+
+        apis.invoke('api1', [1, function (obj) {
+            expect(obj).to.be.a('object');
+            expect(obj.one).to.be.equal(1);
+            expect(obj.two).to.be.an('Array');
+            expect(obj.three).to.be.a('string');
+            expect(obj.four).to.be.equal(true);
+        }]);
+    });
+
+    it('auto decode JSON string to number', () => {
+        let sum = 0;
+
+        apis.add({
+            invoke: ['ArgFuncArgDecode:JSON', "CallMethod"],
+            name: "api2",
+            method: "tp1API.api2",
+            args: [
+                {name: 'one', type: 'number'},
+                {name: 'two', type: 'function'}
+            ]
+        });
+        tp1API.api2 = (one, two) => {
+            expect(one).to.be.a('number');
+            expect(two).to.be.a('function');
+
+            two('37');
+        };
+
+        apis.invoke('api2', [1, function (num) {
+            expect(num).to.be.a('number');
+            expect(num).to.be.equal(37);
+        }]);
+    });
+
+    it('auto decode JSON string to Array', () => {
+        let sum = 0;
+
+        apis.add({
+            invoke: ['ArgFuncArgDecode:JSON', "CallMethod"],
+            name: "api3",
+            method: "tp1API.api3",
+            args: [
+                {name: 'one', type: 'number'},
+                {name: 'two', type: 'function'}
+            ]
+        });
+        tp1API.api3 = (one, two) => {
+            expect(one).to.be.a('number');
+            expect(two).to.be.a('function');
+
+            two(JSON.stringify([1, [2, 3], '3', true]));
+        };
+
+        apis.invoke('api3', [1, function (arr) {
+            expect(arr).to.be.a('Array');
+            expect(arr[0]).to.be.equal(1);
+            expect(arr[1]).to.be.an('Array');
+            expect(arr[2]).to.be.a('string');
+            expect(arr[3]).to.be.equal(true);
+        }]);
+    });
+
+});
+
