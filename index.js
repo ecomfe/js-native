@@ -705,12 +705,12 @@
         var processors = [];
 
         each(description.invoke, function (processName) {
-            var dotIndex = processName.indexOf('.');
+            var dotIndex = processName.indexOf(':');
             var option;
 
             if (dotIndex > 0) {
                 option = processName.slice(dotIndex + 1);
-                processName = processName(0, dotIndex);
+                processName = processName.slice(0, dotIndex);
             }
 
             var processor = processorCreators[processName](description, option);
