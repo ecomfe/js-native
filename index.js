@@ -971,7 +971,9 @@
     }
 
 })(
-    typeof global === 'undefined'
-        ? this
-        : global
+    typeof window !== 'undefined'
+        ? window
+        : typeof global !== 'undefined'
+            ? global
+            : this
 );
