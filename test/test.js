@@ -803,6 +803,45 @@ describe('Processor ArgEncode', () => {
         ]);
     });
 
+    it('mix ArgFuncEncode', () => {
+        apis.add({
+            invoke: ['ArgCheck', 'ArgFuncEncode', 'ArgEncode:JSON', "CallMethod"],
+            name: "api2",
+            method: "tp3API.api2",
+            args: [
+                {name: 'one', value: 'string'},
+                {name: 'two', value: 'number'},
+                {name: 'three', value: 'boolean'},
+                {name: 'four', value: 'function'}
+            ]
+        });
+        tp3API.api2 = (one, two, three, four) => {
+            expect(one).to.be.a('string');
+            expect(two).to.be.a('string');
+            expect(three).to.be.a('string');
+            expect(four).to.be.a('string');
+
+            expect(one).to.be.equal('"hello"');
+            expect(two).to.be.equal('2');
+            expect(three).to.be.equal('true');
+
+            let fn = global[JSON.parse(four)];
+            expect(fn).to.be.a('function');
+
+            fn(JSON.parse(two))
+        };
+
+        apis.invoke('api2', [
+            'hello',
+            2,
+            true,
+            function (two) {
+                expect(two).to.be.a('number');
+                expect(two).to.be.equal(2);
+            } 
+        ]);
+    });
+
 
 });
 
