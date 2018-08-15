@@ -761,4 +761,49 @@ describe('Processor ArgFuncEncode', () => {
 });
 
 
+describe('Processor ArgEncode', () => {
+    let tp3API = {};
+    global.tp3API = tp3API;
+
+
+    let apis;
+    before(() => {
+        apis = jsNative.createContainer();
+    });
+
+    it('encode json', () => {
+        apis.add({
+            invoke: ['ArgCheck', 'ArgEncode:JSON', "CallMethod"],
+            name: "api1",
+            method: "tp3API.api1",
+            args: [
+                {name: 'one', value: 'string'},
+                {name: 'two', value: 'number'},
+                {name: 'three', value: 'boolean'},
+                {name: 'four', value: 'object'}
+            ]
+        });
+        tp3API.api1 = (one, two, three, four) => {
+            expect(one).to.be.a('string');
+            expect(two).to.be.a('string');
+            expect(three).to.be.a('string');
+            expect(four).to.be.a('string');
+
+            expect(one).to.be.equal('"hello"');
+            expect(two).to.be.equal('2');
+            expect(three).to.be.equal('true');
+            expect(four).to.be.equal('{"name":"hello"}');
+        };
+
+        apis.invoke('api1', [
+            'hello',
+            2,
+            true,
+            {name: 'hello'}
+        ]);
+    });
+
+
+});
+
 
