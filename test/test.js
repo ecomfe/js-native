@@ -845,4 +845,40 @@ describe('Processor ArgEncode', () => {
 
 });
 
+describe('Processor ArgCombine', () => {
+    let apis;
+    before(() => {
+        apis = jsNative.createContainer();
+    });
 
+    it('JSONString', () => {
+        apis.add({
+            invoke: ['ArgCombine:JSONString'],
+            name: 'api1',
+            args: [
+                {name: 'one', value: 'string'},
+                {name: 'two', value: 'number'},
+                {name: 'three', value: 'boolean'},
+                {name: 'four', value: 'object'}
+            ]
+        });
+
+        let resultStr = apis.invoke('api1', [
+            'hello',
+            2,
+            true,
+            {name: 'hello'}
+        ]);
+        expect(resultStr).to.be.a('string');
+
+
+        let result = JSON.parse(resultStr);
+        expect(result).to.be.a('object');
+        expect(result.one).to.be.equal('hello');
+        expect(result.two).to.be.equal(2);
+        expect(result.three).to.be.equal(true);
+        expect(result.four.name).to.be.equal('hello');
+
+    });
+
+});
