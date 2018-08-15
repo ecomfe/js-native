@@ -305,9 +305,7 @@
      */
     function argJSONEncode(args) {
         each(args, function (arg, i) {
-            if (typeof arg === 'function') {
-                args[i] = JSON.stringify(arg);
-            }
+            args[i] = JSON.stringify(arg);
         });
 
         return args;
