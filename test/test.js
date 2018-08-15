@@ -68,8 +68,8 @@ describe('APIContainer', () => {
             name: "api3",
             method: "tAPI.api3",
             args: [
-                {name: 'one', type: 'number'},
-                {name: 'two', type: 'number'}
+                {name: 'one', value: 'number'},
+                {name: 'two', value: 'number'}
             ]
         });
         tAPI.api3 = (one, two) => {
@@ -605,8 +605,8 @@ describe('Processor ArgFuncArgDecode', () => {
             name: "api1",
             method: "tp1API.api1",
             args: [
-                {name: 'one', type: 'number'},
-                {name: 'two', type: 'function'}
+                {name: 'one', value: 'number'},
+                {name: 'two', value: 'function'}
             ]
         });
         tp1API.api1 = (one, two) => {
@@ -633,8 +633,8 @@ describe('Processor ArgFuncArgDecode', () => {
             name: "api2",
             method: "tp1API.api2",
             args: [
-                {name: 'one', type: 'number'},
-                {name: 'two', type: 'function'}
+                {name: 'one', value: 'number'},
+                {name: 'two', value: 'function'}
             ]
         });
         tp1API.api2 = (one, two) => {
@@ -679,4 +679,86 @@ describe('Processor ArgFuncArgDecode', () => {
     });
 
 });
+
+describe('Processor ArgFuncEncode', () => {
+    let tp2API = {};
+    global.tp2API = tp2API;
+
+
+    let apis;
+    before(() => {
+        apis = jsNative.createContainer();
+    });
+
+    it('encode function to string which hook to global', () => {
+        let sum = 0;
+
+        apis.add({
+            invoke: ['ArgCheck', 'ArgFuncEncode', "CallMethod"],
+            name: "api1",
+            method: "tp2API.api1",
+            args: [
+                {name: 'one', value: 'function'},
+                {name: 'two', value: 'function'}
+            ]
+        });
+        tp2API.api1 = (one, two) => {
+            expect(one).to.be.a('string');
+            expect(two).to.be.a('string');
+
+            global[one](true);
+            global[two]('{"name":"hello"}');
+        };
+
+        apis.invoke('api1', [
+            value => {
+                expect(value).to.be.equal(true);
+                expect(value).to.be.a('boolean');
+            },
+            value => {
+                expect(value).to.be.equal('{"name":"hello"}');
+                expect(value).to.be.a('string');
+            }
+        ]);
+    });
+
+    it('mix ArgFuncArgDecode', () => {
+        let sum = 0;
+
+        apis.add({
+            invoke: ['ArgCheck', 'ArgFuncArgDecode:JSON', 'ArgFuncEncode', "CallMethod"],
+            name: "api2",
+            method: "tp2API.api2",
+            args: [
+                {name: 'one', value: 'function'},
+                {name: 'two', value: 'function'},
+                {name: 'three', value: 'number'}
+            ]
+        });
+        tp2API.api2 = (one, two, three) => {
+            expect(one).to.be.a('string');
+            expect(two).to.be.a('string');
+            expect(three).to.be.a('number');
+            expect(three).to.be.equal(37);
+
+            global[one]('"' + three + '"');
+            global[two]('{"name":"hello"}');
+        };
+
+        apis.invoke('api2', [
+            value => {
+                expect(value).to.be.a('string');
+                expect(value).to.be.equal('37');
+            },
+            value => {
+                expect(value).to.be.a('object');
+                expect(value.name).to.be.equal('hello');
+            },
+            37
+        ]);
+    });
+
+});
+
+
 
