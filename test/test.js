@@ -1020,3 +1020,48 @@ describe('Processor ArgCombine', () => {
 
     });
 });
+
+
+describe('Processor ReturnDecode', () => {
+    let tp4API = {};
+    global.tp4API = tp4API;
+
+
+    let apis;
+    before(() => {
+        apis = jsNative.createContainer();
+    });
+
+    it('decode json', () => {
+        apis.add({
+            invoke: ['CallMethod', 'ReturnDecode:JSON'],
+            name: "api1",
+            method: "tp4API.api1",
+            args: [
+                {name: 'one', value: 'string'},
+                {name: 'two', value: 'number'},
+                {name: 'three', value: 'boolean'},
+                {name: 'four', value: 'object'}
+            ]
+        });
+        tp4API.api1 = (one, two, three, four) => {
+            return JSON.stringify({one, two, three, four});
+        };
+
+        let result = apis.invoke('api1', [
+            'hello',
+            2,
+            true,
+            {name: 'hello'}
+        ]);
+
+        expect(result).to.be.a('object');
+        expect(result.one).to.be.equal('hello');
+        expect(result.two).to.be.equal(2);
+        expect(result.three).to.be.equal(true);
+        expect(result.four.name).to.be.equal('hello');
+    });
+
+
+});
+
