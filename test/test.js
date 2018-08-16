@@ -1062,6 +1062,38 @@ describe('Processor ReturnDecode', () => {
         expect(result.four.name).to.be.equal('hello');
     });
 
+    it('no decode when option is not equal to json', () => {
+        apis.add({
+            invoke: ['CallMethod', 'ReturnDecode:hello'],
+            name: "api2",
+            method: "tp4API.api2",
+            args: [
+                {name: 'one', value: 'string'},
+                {name: 'two', value: 'number'},
+                {name: 'three', value: 'boolean'},
+                {name: 'four', value: 'object'}
+            ]
+        });
+        tp4API.api2 = (one, two, three, four) => {
+            return JSON.stringify({one, two, three, four});
+        };
+
+        let resultStr = apis.invoke('api2', [
+            'hello',
+            2,
+            true,
+            {name: 'hello'}
+        ]);
+        expect(resultStr).to.be.a('string');
+
+        let result = JSON.parse(resultStr);
+        expect(result).to.be.a('object');
+        expect(result.one).to.be.equal('hello');
+        expect(result.two).to.be.equal(2);
+        expect(result.three).to.be.equal(true);
+        expect(result.four.name).to.be.equal('hello');
+    });
+
 
 });
 
