@@ -881,4 +881,66 @@ describe('Processor ArgCombine', () => {
 
     });
 
+    it('Object', () => {
+        apis.add({
+            invoke: ['ArgCombine:Object'],
+            name: 'api2',
+            args: [
+                {name: 'one', value: 'string'},
+                {name: 'two', value: 'number'},
+                {name: 'three', value: 'boolean'},
+                {name: 'four', value: 'object'}
+            ]
+        });
+
+        let result = apis.invoke('api2', [
+            'hello',
+            2,
+            true,
+            {name: 'hello'}
+        ]);
+
+        expect(result).to.be.a('object');
+        expect(result.one).to.be.equal('hello');
+        expect(result.two).to.be.equal(2);
+        expect(result.three).to.be.equal(true);
+        expect(result.four.name).to.be.equal('hello');
+
+    });
+
+    it('Object with ArgFuncArgDecode and ArgFuncEncode', () => {
+        apis.add({
+            invoke: ["ArgFuncArgDecode:JSON", 'ArgFuncEncode', 'ArgCombine:Object'],
+            name: 'api3',
+            args: [
+                {name: 'one', value: 'string'},
+                {name: 'two', value: 'number'},
+                {name: 'three', value: 'boolean'},
+                {name: 'four', value: 'object'},
+                {name: 'five', value: 'function'}
+            ]
+        });
+
+        let result = apis.invoke('api3', [
+            'hello',
+            2,
+            true,
+            {name: 'hello'},
+            function (arg) {
+                expect(arg).to.be.a('object');
+                expect(arg.name).to.be.equal('hello');
+            }
+        ]);
+
+        expect(result).to.be.a('object');
+        expect(result.one).to.be.equal('hello');
+        expect(result.two).to.be.equal(2);
+        expect(result.three).to.be.equal(true);
+        expect(result.four.name).to.be.equal('hello');
+        expect(result.five).to.be.a('string');
+        expect(global[result.five]).to.be.a('function');
+
+        global[result.five](JSON.stringify({name: 'hello'}));
+
+    });
 });
