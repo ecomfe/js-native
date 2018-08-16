@@ -508,13 +508,13 @@
             if (description.args.length < 5) {
                 return function (args) {
                     findMethod();
-                    methodOwner[methodName](args[0], args[1], args[2], args[3]);
+                    return methodOwner[methodName](args[0], args[1], args[2], args[3]);
                 };
             }
 
             return function (args) {
                 findMethod();
-                methodOwner[methodName].apply(methodOwner, args);
+                return methodOwner[methodName].apply(methodOwner, args);
             };
         },
         
