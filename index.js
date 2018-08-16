@@ -452,7 +452,7 @@
         ArgCombine: function (description, option) {
             switch (option) {
                 case 'URL':
-                    var prefix = description.schema + '/' + description.authority + description.path + '?';
+                    var prefix = description.schema + '://' + description.authority + description.path;
                     return function (args) {
                         var result = [];
 
@@ -463,7 +463,9 @@
                             }
                         });
 
-                        return result.join('&');
+                        var queryStr = result.join('&');
+
+                        return queryStr ? prefix + '?' + queryStr : prefix;
                     };
 
                 case 'Object':
