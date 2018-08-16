@@ -943,4 +943,80 @@ describe('Processor ArgCombine', () => {
         global[result.five](JSON.stringify({name: 'hello'}));
 
     });
+
+    it('URL', () => {
+        apis.add({
+            invoke: ['ArgCombine:URL'],
+            name: 'api4',
+            schema: 'nothttp',
+            authority: 'net.com',
+            path: '/request',
+            args: [
+                {name: 'one', value: 'string'},
+                {name: 'two', value: 'string'}
+            ]
+            
+        });
+
+        let result = apis.invoke('api4', [
+            'he/?&llo',
+            'san'
+        ]);
+
+        expect(result).to.be.a('string');
+        expect(result).to.contains('one=he%2F%3F%26llo');
+        expect(result).to.contains('two=san');
+        expect(result).to.contains('nothttp://net.com/request?');
+
+    });
+
+    it('URL with args JSON encode', () => {
+        apis.add({
+            invoke: [
+                'ArgFuncArgDecode:JSON',
+                'ArgFuncEncode',
+                'ArgEncode:JSON',
+                'ArgCombine:URL'
+            ],
+            name: 'api5',
+            schema: 'nothttp',
+            authority: 'net',
+            path: '/request',
+            args: [
+                {name: 'url', value: 'string'},
+                {name: 'method', value: 'string'},
+                {name: 'onsuccess', value: 'function'}
+            ]
+            
+        });
+
+        let result = apis.invoke('api5', [
+            'https://www.baidu.com/',
+            'get',
+            function (arg) {
+                expect(arg).to.be.a('object');
+                expect(arg.name).to.be.equal('hello');
+            }
+        ]);
+
+        expect(result).to.be.a('string');
+        expect(result).to.contains('url=%22https%3A%2F%2Fwww.baidu.com%2F%22');
+        expect(result).to.contains('method=%22get%22');
+        expect(result).to.contains('nothttp://net/request?');
+
+        let query = {};
+        result.slice(result.indexOf('?') + 1).split('&').forEach(item => {
+            let pair = item.split('=');
+            query[pair[0]] = JSON.parse(decodeURIComponent(pair[1]));
+        });
+
+        expect(query.url).to.be.equal('https://www.baidu.com/');
+        expect(query.method).to.be.equal('get');
+        expect(query.onsuccess).to.be.a('string');
+        expect(global[query.onsuccess]).to.be.a('function');
+
+
+        global[query.onsuccess](JSON.stringify({name: 'hello'}));
+
+    });
 });
