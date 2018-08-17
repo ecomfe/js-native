@@ -1097,3 +1097,126 @@ describe('Processor ReturnDecode', () => {
 
 });
 
+function decodeURL(source) {
+    let url = {query: {}};
+
+    let queryStrStart = source.lastIndexOf('?');
+    if (queryStrStart > 0) {
+        let queryStr = source.slice(queryStrStart + 1);
+        source = source.slice(0, queryStrStart);
+
+        queryStr.split('&').forEach(item => {
+            let pair = item.split('=');
+            url.query[pair[0]] = decodeURIComponent(pair[1]);
+        });
+    }
+
+    let match = /^([a-z]+):\/\/([^\/]+)(\/.*)$/i.exec(source);
+    if (match) {
+        url.schema = match[1];
+        url.authority = match[2];
+        url.path = match[3];
+    }
+
+    return url;
+}
+
+let promptRouter;
+
+global.prompt = source => {
+    if (promptRouter) {
+        let {type, fn} = promptRouter;
+
+        let data;
+        switch (type) {
+            case 'url':
+                data = decodeURL(source);
+                break;
+
+            case 'json':
+                data = JSON.parse(source);
+
+        }
+
+        return fn(data);
+    }
+};
+
+global.prompt.setCurrent = (type, fn) => {
+    promptRouter = {type, fn};
+};
+
+describe('Processor CallPrompt', () => {
+    let apis;
+    before(() => {
+        apis = jsNative.createContainer();
+    });
+
+    it('pass url, and return string', () => {
+        global.prompt.setCurrent('url', url => {
+            expect(url.schema).to.be.equal('nothttp');
+            expect(url.authority).to.be.equal('net');
+            expect(url.path).to.be.equal('/request');
+            expect(url.query.method).to.be.equal('get');
+            expect(url.query.url).to.be.equal('http://www.baidu.com/');
+
+            return JSON.stringify({
+                one: 'hello',
+                two: 2, 
+                three: true, 
+                four: {name: 'hello'}
+            });
+        });
+
+
+        apis.add({
+            invoke: ['CallPrompt'],
+            name: "api1"
+        });
+
+        let resultStr = apis.invoke('api1', 'nothttp://net/request?url=http%3A%2F%2Fwww.baidu.com%2F&method=get');
+        expect(resultStr).to.be.a('string');
+
+        let result = JSON.parse(resultStr);
+        expect(result).to.be.a('object');
+        expect(result.one).to.be.equal('hello');
+        expect(result.two).to.be.equal(2);
+        expect(result.three).to.be.equal(true);
+        expect(result.four.name).to.be.equal('hello');
+    });
+
+    it('pass json, and return string', () => {
+        global.prompt.setCurrent('json', data => {
+            expect(data.method).to.be.equal('get');
+            expect(data.url).to.be.equal('http://www.baidu.com/');
+
+            return JSON.stringify({
+                one: 'hello',
+                two: 2, 
+                three: true, 
+                four: {name: 'hello'}
+            });
+        });
+
+
+        apis.add({
+            invoke: ['CallPrompt'],
+            name: "api2"
+        });
+
+        let resultStr = apis.invoke('api2', JSON.stringify({url: 'http://www.baidu.com/', method: 'get'}));
+        expect(resultStr).to.be.a('string');
+
+        let result = JSON.parse(resultStr);
+        expect(result).to.be.a('object');
+        expect(result.one).to.be.equal('hello');
+        expect(result.two).to.be.equal(2);
+        expect(result.three).to.be.equal(true);
+        expect(result.four.name).to.be.equal('hello');
+    });
+
+
+
+});
+
+
