@@ -320,7 +320,6 @@
      */
     function argCombine(args, declarations) {
         var result = {};
-
         each(declarations, function (declaration, i) {
             var arg = args[i];
             if (arg != null) {
@@ -439,6 +438,7 @@
             var value = description[option];
             return function (args) {
                 args[argLen] = value;
+                return args;
             };
         },
         
