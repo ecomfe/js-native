@@ -1097,7 +1097,7 @@ describe('Processor ReturnDecode', () => {
 
 });
 
-function decodeURL(source) {
+function decodeURL(source, decodeJSON) {
     let url = {query: {}};
 
     let queryStrStart = source.lastIndexOf('?');
@@ -1107,7 +1107,9 @@ function decodeURL(source) {
 
         queryStr.split('&').forEach(item => {
             let pair = item.split('=');
-            url.query[pair[0]] = decodeURIComponent(pair[1]);
+            url.query[pair[0]] = decodeJSON 
+                ? JSON.parse(decodeURIComponent(pair[1]))
+                : decodeURIComponent(pair[1]);
         });
     }
 
@@ -1215,7 +1217,128 @@ describe('Processor CallPrompt', () => {
         expect(result.four.name).to.be.equal('hello');
     });
 
+});
 
+
+let locationHandler;
+function setLocationHandler(fn) {
+    locationHandler = fn;
+}
+
+let realLocation;
+global.location = {};
+Object.defineProperty(global.location, 'href', {
+    get: function () {
+        return realLocation;
+    },
+    set: function (value) {
+        realLocation = value;
+        if (locationHandler) {
+            locationHandler(value);
+        }
+    },
+    enumerable : true,
+    configurable : true
+});
+
+
+
+describe('Processor CallLocation', () => {
+    let apis;
+    before(() => {
+        apis = jsNative.createContainer();
+    });
+
+    it('pass url, nothing return', () => {
+        setLocationHandler(url => {
+            expect(url).to.be.a('string');
+
+            url = decodeURL(url);
+            expect(url.schema).to.be.equal('nothttp');
+            expect(url.authority).to.be.equal('net');
+            expect(url.path).to.be.equal('/request');
+            expect(url.query.method).to.be.equal('get');
+            expect(url.query.url).to.be.equal('http://www.baidu.com/');
+
+            return JSON.stringify({
+                one: 'hello',
+                two: 2, 
+                three: true, 
+                four: {name: 'hello'}
+            });
+        });
+
+
+        apis.add({
+            invoke: ['CallLocation'],
+            name: "api1"
+        });
+
+        let resultStr = apis.invoke('api1', 'nothttp://net/request?url=http%3A%2F%2Fwww.baidu.com%2F&method=get');
+        expect(resultStr).to.be.a('undefined');
+    });
+
+    it('async callback with JSON string', done => {
+        setLocationHandler(url => {
+            expect(url).to.be.a('string');
+
+            url = decodeURL(url, 1);
+            expect(url.schema).to.be.equal('nothttp');
+            expect(url.authority).to.be.equal('net');
+            expect(url.path).to.be.equal('/request');
+            expect(url.query.method).to.be.equal('get');
+            expect(url.query.url).to.be.equal('http://www.baidu.com/');
+
+            setTimeout(
+                () => {
+                    global[url.query.onsuccess](JSON.stringify({
+                        one: 'hello',
+                        two: 2, 
+                        three: true, 
+                        four: {name: 'hello'}
+                    }));
+
+                    done();
+                },
+                10
+            );
+        });
+
+
+        apis.add({
+            invoke: [
+                'ArgFuncArgDecode:JSON',
+                'ArgFuncEncode',
+                'ArgEncode:JSON',
+                'ArgCombine:URL',
+                'CallLocation'
+            ],
+
+            schema: "nothttp",
+            authority: "net",
+            path: "/request",
+            name: "api2",
+
+            args: [
+                {name: 'url', value: 'string'},
+                {name: 'method', value: 'number'},
+                {name: 'onsuccess', value: 'function'}
+            ]
+        });
+
+        let resultStr = apis.invoke('api2', [
+            'http://www.baidu.com/', 
+            'get', 
+            result => {
+                expect(result).to.be.a('object');
+                expect(result.one).to.be.equal('hello');
+                expect(result.two).to.be.equal(2);
+                expect(result.three).to.be.equal(true);
+                expect(result.four.name).to.be.equal('hello');
+            }
+        ]);
+        expect(resultStr).to.be.a('undefined');
+    });
 
 });
 
