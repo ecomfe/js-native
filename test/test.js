@@ -1343,3 +1343,129 @@ describe('Processor CallLocation', () => {
 });
 
 
+let iframeHandler;
+function setIframeHandler(fn) {
+    iframeHandler = fn;
+}
+
+
+global.document = {
+    createElement(tagName) {
+        if (!/^iframe$/i.test(tagName)) {
+            throw new Error('not supported');
+        }
+
+        return {};
+    },
+
+    body: {
+        appendChild(obj) {
+            if (iframeHandler) {
+                iframeHandler(obj.src);
+            }
+        },
+
+        removeChild(obj) {}
+    }
+};
+
+describe('Processor CallIframe', () => {
+    let apis;
+    before(() => {
+        apis = jsNative.createContainer();
+    });
+
+    it('pass url, nothing return', () => {
+        setIframeHandler(url => {
+            expect(url).to.be.a('string');
+
+            url = decodeURL(url);
+            expect(url.schema).to.be.equal('nothttp');
+            expect(url.authority).to.be.equal('net');
+            expect(url.path).to.be.equal('/request');
+            expect(url.query.method).to.be.equal('get');
+            expect(url.query.url).to.be.equal('http://www.baidu.com/');
+
+            return JSON.stringify({
+                one: 'hello',
+                two: 2, 
+                three: true, 
+                four: {name: 'hello'}
+            });
+        });
+
+
+        apis.add({
+            invoke: ['CallIframe'],
+            name: "api1"
+        });
+
+        let resultStr = apis.invoke('api1', 'nothttp://net/request?url=http%3A%2F%2Fwww.baidu.com%2F&method=get');
+        expect(resultStr).to.be.a('undefined');
+    });
+
+    it('async callback with JSON string', done => {
+        setIframeHandler(url => {
+            expect(url).to.be.a('string');
+
+            url = decodeURL(url, 1);
+            expect(url.schema).to.be.equal('nothttp');
+            expect(url.authority).to.be.equal('net');
+            expect(url.path).to.be.equal('/request');
+            expect(url.query.method).to.be.equal('get');
+            expect(url.query.url).to.be.equal('http://www.baidu.com/');
+
+            setTimeout(
+                () => {
+                    global[url.query.onsuccess](JSON.stringify({
+                        one: 'hello',
+                        two: 2, 
+                        three: true, 
+                        four: {name: 'hello'}
+                    }));
+
+                    done();
+                },
+                10
+            );
+        });
+
+
+        apis.add({
+            invoke: [
+                'ArgFuncArgDecode:JSON',
+                'ArgFuncEncode',
+                'ArgEncode:JSON',
+                'ArgCombine:URL',
+                'CallIframe'
+            ],
+
+            schema: "nothttp",
+            authority: "net",
+            path: "/request",
+            name: "api2",
+
+            args: [
+                {name: 'url', value: 'string'},
+                {name: 'method', value: 'number'},
+                {name: 'onsuccess', value: 'function'}
+            ]
+        });
+
+        let resultStr = apis.invoke('api2', [
+            'http://www.baidu.com/', 
+            'get', 
+            result => {
+                expect(result).to.be.a('object');
+                expect(result.one).to.be.equal('hello');
+                expect(result.two).to.be.equal(2);
+                expect(result.three).to.be.equal(true);
+                expect(result.four.name).to.be.equal('hello');
+            }
+        ]);
+        expect(resultStr).to.be.a('undefined');
+    });
+
+});
+
+
