@@ -1447,7 +1447,7 @@ describe('Processor CallIframe', () => {
 
             args: [
                 {name: 'url', value: 'string'},
-                {name: 'method', value: 'number'},
+                {name: 'method', value: 'string'},
                 {name: 'onsuccess', value: 'function'}
             ]
         });
@@ -1468,4 +1468,113 @@ describe('Processor CallIframe', () => {
 
 });
 
+
+global.webkit = {messageHandlers: {}};
+let messageHandler;
+function setMessageHandler(handler, fn) {
+    messageHandler = fn;
+    global.webkit.messageHandlers[handler] = {
+        postMessage: handleMessage
+    };
+}
+
+
+function handleMessage(data) {
+    if (messageHandler) {
+        messageHandler(data);
+    }
+}
+
+
+describe('Processor CallMessage', () => {
+    let apis;
+    before(() => {
+        apis = jsNative.createContainer();
+    });
+
+    it('pass object, every item is string', () => {
+        setMessageHandler('justtest', data => {
+            expect(data).to.be.a('object');
+            expect(data.method).to.be.equal('get');
+            expect(data.url).to.be.equal('http://www.baidu.com/');
+
+            return JSON.stringify({
+                one: 'hello',
+                two: 2, 
+                three: true, 
+                four: {name: 'hello'}
+            });
+        });
+
+
+        apis.add({
+            invoke: ['CallMessage'],
+            handler: 'justtest',
+            name: "api1"
+        });
+
+        let resultStr = apis.invoke('api1', {
+            url: 'http://www.baidu.com/',
+            method: 'get'
+        });
+        expect(resultStr).to.be.a('undefined');
+    });
+
+    it('async callback with JSON string', done => {
+        setMessageHandler('justtest', data => {
+            expect(data).to.be.a('object');
+
+            expect(data._name).to.be.equal('api2');
+            expect(data.method).to.be.equal('get');
+            expect(data.url).to.be.equal('http://www.baidu.com/');
+
+            setTimeout(
+                () => {
+                    global[data.onsuccess](JSON.stringify({
+                        one: 'hello',
+                        two: 2, 
+                        three: true, 
+                        four: {name: 'hello'}
+                    }));
+
+                    done();
+                },
+                10
+            );
+        });
+
+
+        apis.add({
+            invoke: [
+                "ArgFuncArgDecode:JSON",
+                "ArgFuncEncode",
+                "ArgAdd:name",
+                "ArgCombine:Object",
+                "CallMessage"
+            ],
+
+            handler: 'justtest',
+            name: "api2",
+
+            args: [
+                {name: 'url', value: 'string'},
+                {name: 'method', value: 'string'},
+                {name: 'onsuccess', value: 'function'}
+            ]
+        });
+
+        let resultStr = apis.invoke('api2', [
+            'http://www.baidu.com/', 
+            'get', 
+            result => {
+                expect(result).to.be.a('object');
+                expect(result.one).to.be.equal('hello');
+                expect(result.two).to.be.equal(2);
+                expect(result.three).to.be.equal(true);
+                expect(result.four.name).to.be.equal('hello');
+            }
+        ]);
+        expect(resultStr).to.be.a('undefined');
+    });
+});
 
