@@ -1022,6 +1022,81 @@ describe('Processor ArgCombine', () => {
 });
 
 
+
+describe('Processor ArgAdd', () => {
+    let apis;
+    before(() => {
+        apis = jsNative.createContainer();
+    });
+
+    it('when no args', () => {
+        apis.add({
+            invoke: ['ArgAdd:name'],
+            name: "api1"
+        });
+
+        let result = apis.invoke('api1');
+
+        expect(result).to.be.a('Array');
+        expect(result.length).to.be.equal(1);
+        expect(result[0]).to.be.equal('api1');
+    });
+
+
+    it('when many args', () => {
+        apis.add({
+            invoke: ['ArgAdd:name'],
+            name: "api2",
+            args: [
+                {name: 'one', value: 'string'},
+                {name: 'two', value: 'number'},
+                {name: 'three', value: 'boolean'},
+                {name: 'four', value: 'object'}
+            ]
+        });
+
+        let result = apis.invoke('api2', [
+            'hello',
+            2,
+            true,
+            {name: 'hello'}
+        ]);
+
+        expect(result).to.be.a('Array');
+        expect(result.length).to.be.equal(5);
+        expect(result[0]).to.be.equal('hello');
+        expect(result[1]).to.be.equal(2);
+        expect(result[4]).to.be.equal('api2');
+    });
+
+    it('pass args count not equal to declaration args count', () => {
+        apis.add({
+            invoke: ['ArgAdd:name'],
+            name: "api3",
+            args: [
+                {name: 'one', value: 'string'},
+                {name: 'two', value: 'number'},
+                {name: 'three', value: 'boolean'},
+                {name: 'four', value: 'object='}
+            ]
+        });
+
+        let result = apis.invoke('api3', [
+            'hello',
+            2,
+            true
+        ]);
+
+        expect(result).to.be.a('Array');
+        expect(result.length).to.be.equal(5);
+        expect(result[0]).to.be.equal('hello');
+        expect(result[1]).to.be.equal(2);
+        expect(result[3]).to.be.a('undefined');
+        expect(result[4]).to.be.equal('api3');
+    });
+});
+
+
 describe('Processor ReturnDecode', () => {
     let tp4API = {};
     global.tp4API = tp4API;
