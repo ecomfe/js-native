@@ -1766,7 +1766,7 @@ describe('Shortcut method', () => {
         expect(returnValue.method).to.be.a('undefined');
     });
 
-    it('success call with map api, check args、return value and callback', () => {
+    it('call with map api, check args、return value and callback', () => {
         let sum = 0;
 
         apis.add({
@@ -1821,6 +1821,10 @@ describe('Shortcut method', () => {
 
         expect(returnValue.url).to.be.equal('http://www.baidu.com/');
         expect(returnValue.method).to.be.a('undefined');
+
+        expect(() => {
+            apiObj.thisTest({url: 'http://www.baidu.com/'});
+        }).to.throw('Argument Error');
     });
 
 });
