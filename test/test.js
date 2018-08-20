@@ -1980,6 +1980,8 @@ describe('Shortcut prompt.json', () => {
                 method: arg.req.method
             });
 
+            expect(arg._name).to.be.equal('api1');
+
             global[arg.onsuccess](data);
             return data;
         });
@@ -2035,6 +2037,8 @@ describe('Shortcut prompt.json', () => {
                 url: arg.req.url,
                 method: arg.req.method
             });
+
+            expect(arg._name).to.be.equal('api2');
 
             global[arg.onsuccess](data);
             return data;
