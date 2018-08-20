@@ -89,7 +89,7 @@ let mod = jsNative
 let apiContainer = jsNative.createContainer();
 ```
 
-新的 api 容器对象上拥有 `add' 、`fromNative`、`invoke`、`map` 方法，你可以正常使用它。
+新的 api 容器对象上拥有 `add` 、`fromNative`、`invoke`、`map` 方法，你可以正常使用它。
 
 ```js
 let mod = jsNative
