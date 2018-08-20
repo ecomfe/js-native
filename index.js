@@ -115,7 +115,7 @@
     function checkValue(value, declaration) {
         declaration = normalizeValueDeclaration(declaration);
         if (value == null) {
-            return declaration.isRequired ? 1 : 0;
+            return declaration.isRequired && declaration.type !== '*' ? 1 : 0;
         }
 
 
@@ -432,7 +432,7 @@
 
             description.args.push({
                 name: '_' + option,
-                type: '*'
+                value: '*'
             });
 
             var value = description[option];
