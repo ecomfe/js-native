@@ -904,7 +904,7 @@
     function buildAPIMethod(description) {
         var processors = getProcessors(description);
 
-        function process(arg) {
+        function process(args) {
             each(processors, function (processor) {
                 args = processor(args);
             });
