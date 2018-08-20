@@ -1829,3 +1829,140 @@ describe('Shortcut method', () => {
 
 });
 
+
+describe('Shortcut method.json', () => {
+    let sc2API = {};
+    global.sc2API = sc2API;
+
+
+    let apis;
+    before(() => {
+        apis = jsNative.createContainer();
+    });
+
+    it('success call, check args、return value and callback', () => {
+        let sum = 0;
+
+        apis.add({
+            invoke: 'method.json',
+            name: "api2",
+            method: "sc2API.api2",
+            args: [
+                {name: 'req', value: {
+                    type: {
+                        url: 'string',
+                        method: 'string='
+                    }
+                }},
+                {name: 'onsuccess', value: 'function'}
+            ]
+        });
+        sc2API.api2 = (req, onsuccess) => {
+            req = JSON.parse(req);
+            onsuccess = JSON.parse(onsuccess);
+
+            let data = JSON.stringify({
+                one: 'hello',
+                two: 2, 
+                three: true, 
+                four: {name: 'hello'},
+                url: req.url,
+                method: req.method
+            });
+
+            global[onsuccess](data);
+            return data;
+        };
+
+        let returnValue = apis.invoke('api2', [
+            {url: 'http://www.baidu.com/'}, 
+            function (obj) {
+
+                expect(obj).to.be.a('object');
+                expect(obj.one).to.be.equal('hello');
+                expect(obj.two).to.be.equal(2);
+                expect(obj.three).to.be.a('boolean');
+                expect(obj.four.name).to.be.equal('hello');
+
+                expect(obj.url).to.be.equal('http://www.baidu.com/');
+                expect(obj.method).to.be.a('undefined');
+            }
+        ]);
+        
+        expect(returnValue).to.be.a('object');
+        expect(returnValue.one).to.be.equal('hello');
+        expect(returnValue.two).to.be.equal(2);
+        expect(returnValue.three).to.be.a('boolean');
+        expect(returnValue.four.name).to.be.equal('hello');
+
+        expect(returnValue.url).to.be.equal('http://www.baidu.com/');
+        expect(returnValue.method).to.be.a('undefined');
+    });
+
+    it('call with map api, check args、return value and callback', () => {
+        let sum = 0;
+
+        apis.add({
+            invoke: 'method.json',
+            name: "api3",
+            method: "sc2API.api3",
+            args: [
+                {name: 'req', value: {
+                    type: {
+                        url: 'string',
+                        method: 'string='
+                    }
+                }},
+                {name: 'onsuccess', value: 'function'}
+            ]
+        });
+        sc2API.api3 = (req, onsuccess) => {
+
+            req = JSON.parse(req);
+            onsuccess = JSON.parse(onsuccess);
+
+            let data = JSON.stringify({
+                one: 'hello',
+                two: 2, 
+                three: true, 
+                four: {name: 'hello'},
+                url: req.url,
+                method: req.method
+            });
+
+            global[onsuccess](data);
+            return data;
+        };
+
+        let apiObj = apis.map({api3: 'thisTest'});
+
+        let returnValue = apiObj.thisTest(
+            {url: 'http://www.baidu.com/'}, 
+            function (obj) {
+                expect(obj).to.be.a('object');
+                expect(obj.one).to.be.equal('hello');
+                expect(obj.two).to.be.equal(2);
+                expect(obj.three).to.be.a('boolean');
+                expect(obj.four.name).to.be.equal('hello');
+
+                expect(obj.url).to.be.equal('http://www.baidu.com/');
+                expect(obj.method).to.be.a('undefined');
+            }
+        );
+        
+        expect(returnValue).to.be.a('object');
+        expect(returnValue.one).to.be.equal('hello');
+        expect(returnValue.two).to.be.equal(2);
+        expect(returnValue.three).to.be.a('boolean');
+        expect(returnValue.four.name).to.be.equal('hello');
+
+        expect(returnValue.url).to.be.equal('http://www.baidu.com/');
+        expect(returnValue.method).to.be.a('undefined');
+
+        expect(() => {
+            apiObj.thisTest({url: 'http://www.baidu.com/'});
+        }).to.throw('Argument Error');
+    });
+
+});
+
