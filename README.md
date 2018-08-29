@@ -115,6 +115,13 @@ mod.fetch('my-url', 'GET', data => {});
 
 ### jsNative
 
+通常，对于一个应用场景，我们倾向于在一个地方管理所有的调用 API 。所以 jsNative 是 [APIContainer](##apicontainer) 的一个实例，在这个实例上额外提供了：
+
+- [createContainer](#jsnativecreatecontainer) 方法。在不想用默认 [APIContainer](##apicontainer) 实例时，可以创建自己的 [APIContainer](##apicontainer) 实例
+- [invokeAPI](#jsnativeinvokeapi) 方法。可以直接调用 Native API
+
+jsNative 上的其他方法请参考 [APIContainer](##apicontainer) 的文档。
+
 
 ### jsNative.createContainer
 
