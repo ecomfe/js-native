@@ -115,17 +115,60 @@ mod.fetch('my-url', 'GET', data => {});
 
 ### jsNative
 
-通常，对于一个应用场景，我们倾向于在一个地方管理所有的调用 API 。所以 jsNative 是 [APIContainer](##apicontainer) 的一个实例，在这个实例上额外提供了：
+通常，对于一个应用场景，我们倾向于在一个地方管理所有的 Native 通信接口 。所以 jsNative 是 [APIContainer](##apicontainer) 的一个实例，在这个实例上额外提供了：
 
 - [createContainer](#jsnativecreatecontainer) 方法。在不想用默认 [APIContainer](##apicontainer) 实例时，可以创建自己的 [APIContainer](##apicontainer) 实例
-- [invokeAPI](#jsnativeinvokeapi) 方法。可以直接调用 Native API
+- [invokeAPI](#jsnativeinvokeapi) 方法。可以直接调用 Native 通信接口
 
 jsNative 上的其他方法请参考 [APIContainer](##apicontainer) 的文档。
 
 
 ### jsNative.createContainer
 
+`说明`
+
+创建 [APIContainer](##apicontainer) 实例。
+
+`参数`
+
+无
+
+
+```js
+let apiContainer = jsNative.createContainer();
+```
+
 ### jsNative.invokeAPI
 
+`说明`
+
+通过[通信接口描述](doc/description.md)，直接调用。
+
+`参数`
+
+- `{Object} description` [通信接口描述](doc/description.md)对象
+- `{Array=} args` 调用参数
+
+```js
+let apiList = jsNative.invokeAPI(
+    {
+        "invoke": "method.json",
+        "name": "net.request",
+        "method": "_naNet.request",
+        "args": [
+            {"name": "url", "value": "string"},
+            {"name": "method", "value": "string"},
+            {"name": "onsuccess", "value": "function"}
+        ]
+    },
+    [
+        'https://yourdomain.com/path',
+        'get',
+        content => {
+            console.log(content);
+        }
+    ]
+);
+```
 
 ### APIContainer
