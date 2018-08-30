@@ -123,7 +123,7 @@ mod.fetch('my-url', 'GET', data => {});
 jsNative 上的其他方法请参考 [APIContainer](#apicontainer) 的文档。
 
 
-### jsNative.createContainer
+#### jsNative.createContainer
 
 `说明`
 
@@ -142,7 +142,7 @@ jsNative 上的其他方法请参考 [APIContainer](#apicontainer) 的文档。
 let apiContainer = jsNative.createContainer();
 ```
 
-### jsNative.invokeAPI
+#### jsNative.invokeAPI
 
 `说明`
 
@@ -181,6 +181,8 @@ let apiList = jsNative.invokeAPI(
 
 
 ### APIContainer
+
+通信接口容器类。用于通信接口的管理功能，包括多种注册方式、调用、编译出可被直接调用函数组成的对象等。
 
 
 #### add
