@@ -1,4 +1,4 @@
-jsNative
+jsNative [![GitHub license](https://img.shields.io/github/license/ecomfe/san.svg?style=flat-square)](https://github.com/facebook/react/blob/master/LICENSE)
 ---------
 
 

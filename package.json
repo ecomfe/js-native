@@ -18,7 +18,7 @@
     "url": "git+https://github.com/errorrik/js-native.git"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/errorrik/js-native/issues"
   },
