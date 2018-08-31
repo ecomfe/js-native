@@ -1,7 +1,9 @@
-jsNative [![npm version](https://img.shields.io/npm/v/js-native.svg?style=flat-square)](https://www.npmjs.com/package/js-native) [![GitHub license](https://img.shields.io/github/license/ecomfe/js-native.svg?style=flat-square)](https://github.com/ecomfe/js-native/blob/master/LICENSE) [![CircleCI](https://circleci.com/gh/ecomfe/js-native.svg?style=svg)](https://circleci.com/gh/ecomfe/js-native)
+jsNative
 ---------
 
-
+[![npm version](https://img.shields.io/npm/v/js-native.svg?style=flat-square)](https://www.npmjs.com/package/js-native)
+[![GitHub license](https://img.shields.io/github/license/ecomfe/js-native.svg?style=flat-square)](https://github.com/ecomfe/js-native/blob/master/LICENSE)
+[![CircleCI](https://circleci.com/gh/ecomfe/js-native.svg?style=svg)](https://circleci.com/gh/ecomfe/js-native)
 
 
 jsNative 是一个 JavaScript 与 Native 通信管理的库。其基于 [通信接口描述](doc/description.md)，生成可调用 API。
