@@ -139,6 +139,7 @@ jsNative 上的其他方法请参考 [APIContainer](#apicontainer) 的文档。
 
 [APIContainer](#apicontainer) 实例。
 
+`示例`
 
 ```js
 let apiContainer = jsNative.createContainer();
@@ -158,6 +159,8 @@ let apiContainer = jsNative.createContainer();
 `返回`
 
 `{*}` 调用结果
+
+`示例`
 
 ```js
 let apiList = jsNative.invokeAPI(
@@ -201,6 +204,8 @@ let apiList = jsNative.invokeAPI(
 
 `{APIContainer}` this
 
+`示例`
+
 ```js
 apiContainer.add({
     "invoke": "method.json",
@@ -228,6 +233,8 @@ apiContainer.add({
 
 `{APIContainer}` this
 
+`示例`
+
 ```js
 apiContainer.fromNative({
     "invoke": "method",
@@ -250,6 +257,8 @@ apiContainer.fromNative({
 `返回`
 
 `{*}` 调用结果
+
+`示例`
 
 ```js
 apiContainer
@@ -288,6 +297,8 @@ apiContainer
 `返回`
 
 `{Object}` 生成的对象
+
+`示例`
 
 ```js
 apiContainer.add({
