@@ -13,6 +13,11 @@
   "scripts": {
     "test": "mocha test/test.js index.js"
   },
+  "files": [
+    "doc",
+    "dist",
+    "index.js"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/errorrik/js-native.git"
