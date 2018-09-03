@@ -15,6 +15,29 @@ jsNative 是一个 JavaScript 与 Native 通信管理的库。其基于 [通信�
 
 ## 引入
 
+### 下载
+
+`NPM:`
+
+```
+$ npm i js-native --save 
+```
+
+`保存:`
+
+[请点击右键另存为](https://unpkg.com/js-native@latest)
+
+
+### 引用
+
+```html
+<!-- 引用通过 NPM 下载的本地文件 -->
+<script src="node_modules/js-native/index.js"></script>
+
+<!-- 通过 CDN 引用 -->
+<script src="https://unpkg.com/js-native@latest"></script>
+```
+
 
 ## 使用
 
