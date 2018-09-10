@@ -8,10 +8,12 @@
   },
   "devDependencies": {
     "chai": "^4.1.2",
-    "mocha": "^5.2.0"
+    "codecov": "^3.1.0",
+    "mocha": "^5.2.0",
+    "istanbul": "^0.4.5"
   },
   "scripts": {
-    "test": "mocha test/test.js index.js"
+    "test": "istanbul cover ./node_modules/mocha/bin/_mocha"
   },
   "files": [
     "doc",
