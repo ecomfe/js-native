@@ -585,6 +585,33 @@ describe('Processor ArgCheck', () => {
         }).to.throw('string');
 
     });
+
+    it('valid *', () => {
+        apis.add({
+            invoke: ["ArgCheck"],
+            name: "argCheck19",
+            args: [
+                {name: 'one', value: 'number'},
+                {name: 'two', value: '*'}
+            ]
+        });
+
+        expect(() => {
+            apis.invoke('argCheck19', [1, '2']);
+        }).to.not.throw(Error);
+
+        expect(() => {
+            apis.invoke('argCheck19', [1, 2]);
+        }).to.not.throw(Error);
+
+        expect(() => {
+            apis.invoke('argCheck19', [2]);
+        }).to.not.throw(Error);
+
+        expect(() => {
+            apis.invoke('argCheck19', [3, null]);
+        }).to.not.throw(Error);
+    });
 });
 
 
@@ -1008,6 +1035,33 @@ describe('Processor ArgCombine', () => {
 
 
         global[query.onsuccess](JSON.stringify({name: 'hello'}));
+
+    });
+
+    it('invalid option', () => {
+        apis.add({
+            invoke: ['ArgCombine:whatever'],
+            name: 'api6',
+            args: [
+                {name: 'one', value: 'string'},
+                {name: 'two', value: 'number'},
+                {name: 'three', value: 'boolean'},
+                {name: 'four', value: 'object'}
+            ]
+        });
+
+        let result = apis.invoke('api6', [
+            'hello',
+            2,
+            true,
+            {name: 'hello'}
+        ]);
+
+        expect(result).to.be.an('Array');
+        expect(result[0]).to.be.equal('hello');
+        expect(result[1]).to.be.equal(2);
+        expect(result[2]).to.be.equal(true);
+        expect(result[3].name).to.be.equal('hello');
 
     });
 });
@@ -1812,6 +1866,50 @@ describe('Shortcut method', () => {
         expect(() => {
             apiObj.thisTest({url: 'http://www.baidu.com/'});
         }).to.throw('Argument Error');
+    });
+
+    it('many many args', () => {
+        apis.add({
+            invoke: 'method',
+            name: "api4",
+            method: "sc1API.api4",
+            args: [
+                {name: 'one', value: 'string'},
+                {name: 'two', value: 'number'},
+                {name: 'three', value: 'boolean'},
+                {name: 'four', value: 'object'},
+                {name: 'five', value: 'string'},
+                {name: 'six', value: 'number'},
+                {name: 'seven', value: 'boolean'},
+                {name: 'eight', value: 'object'}
+            ]
+        });
+        sc1API.api4 = (one, two, three, four, five, six, seven, eight) => {
+            return JSON.stringify({one, two, three, four, five, six, seven, eight});
+        };
+
+        let resultStr = apis.invoke('api4', [
+            'hello',
+            2,
+            true,
+            {name: 'hello'},
+            'hello',
+            2,
+            true,
+            {name: 'hello'}
+        ]);
+        expect(resultStr).to.be.a('string');
+
+        let result = JSON.parse(resultStr);
+        expect(result).to.be.a('object');
+        expect(result.one).to.be.equal('hello');
+        expect(result.two).to.be.equal(2);
+        expect(result.three).to.be.equal(true);
+        expect(result.four.name).to.be.equal('hello');
+        expect(result.five).to.be.equal('hello');
+        expect(result.six).to.be.equal(2);
+        expect(result.seven).to.be.equal(true);
+        expect(result.eight.name).to.be.equal('hello');
     });
 
 });
