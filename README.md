@@ -3,7 +3,7 @@ jsNative
 
 [![npm version](https://img.shields.io/npm/v/js-native.svg?style=flat-square)](https://www.npmjs.com/package/js-native)
 [![GitHub license](https://img.shields.io/github/license/ecomfe/js-native.svg?style=flat-square)](https://github.com/ecomfe/js-native/blob/master/LICENSE)
-[![codecov](https://codecov.io/gh/ecomfe/js-native/branch/master/graph/badge.svg)](https://codecov.io/gh/ecomfe/js-native)
+[![codecov](https://img.shields.io/codecov/c/github/ecomfe/js-native/master.svg?style=flat-square)](https://codecov.io/gh/ecomfe/js-native)
 [![CircleCI](https://circleci.com/gh/ecomfe/js-native.svg?style=svg)](https://circleci.com/gh/ecomfe/js-native)
 
 
