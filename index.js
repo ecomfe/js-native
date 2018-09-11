@@ -1,3 +1,8 @@
+/**
+ * @file js-native 通信管理
+ * @author errorrik(errorrik@gmail.com)
+ */
+
 (function (root) {
 
     /**
@@ -21,7 +26,7 @@
      * 返回原值的方法，调用过程的兜底处理函数
      *
      * @inner
-     * @param {*} source
+     * @param {*} source 原值
      * @return {*}
      */
     function returnRaw(source) {
@@ -35,7 +40,6 @@
      * @inner
      * @param {Array} args 调用参数
      * @param {Array} declarations 参数声明列表
-     * @return {Array}
      */
     function checkArgs(args, declarations) {
         each(declarations, function (declaration, i) {
@@ -74,7 +78,7 @@
      * 对值声明进行标准化处理
      *
      * @inner
-     * @param {Object|string} 值声明
+     * @param {Object|string} declaration 值声明
      * @return {Object}
      */
     function normalizeValueDeclaration(declaration) {
@@ -316,6 +320,7 @@
      *
      * @inner
      * @param {Array} args 调用参数
+     * @param {Array} declarations 参数声明列表
      * @return {Object}
      */
     function argCombine(args, declarations) {
@@ -372,6 +377,7 @@
      * @type {Object}
      */
     var processorCreators = {
+
         /**
          * 创建参数检查处理函数
          *
@@ -397,7 +403,7 @@
                 ? wrapDecodeFuncArgs
                 : returnRaw;
         },
-        
+
         /**
          * 创建回调函数序列化的处理函数
          *
@@ -406,7 +412,7 @@
         ArgFuncEncode: function () {
             return wrapArgFunc;
         },
-        
+
         /**
          * 创建参数序列化的处理函数
          *
@@ -419,7 +425,7 @@
                 ? argJSONEncode
                 : returnRaw;
         },
-        
+
         /**
          * 创建从调用描述对象中添加额外参数的处理函数
          *
@@ -441,7 +447,7 @@
                 return args;
             };
         },
-        
+
         /**
          * 创建参数合并的处理函数
          *
@@ -481,7 +487,7 @@
 
             return returnRaw;
         },
-        
+
         /**
          * 创建方法调用的处理函数
          *
@@ -517,7 +523,7 @@
                 return methodOwner[methodName].apply(methodOwner, args);
             };
         },
-        
+
         /**
          * 创建 prompt 调用的处理函数
          *
@@ -526,7 +532,7 @@
         CallPrompt: function () {
             return callPrompt;
         },
-        
+
         /**
          * 创建 iframe 调用的处理函数
          *
@@ -535,7 +541,7 @@
         CallIframe: function () {
             return callIframe;
         },
-        
+
         /**
          * 创建 location 调用的处理函数
          *
@@ -544,7 +550,7 @@
         CallLocation: function () {
             return callLocation;
         },
-        
+
         /**
          * 创建 postMessage 调用的处理函数
          *
@@ -556,7 +562,7 @@
                 root.webkit.messageHandlers[description.handler].postMessage(args);
             };
         },
-        
+
         /**
          * 创建对返回值进行解码的处理函数
          *
@@ -672,21 +678,21 @@
             'ArgEncode:JSON'
         ],
 
-        JSONString:[
+        JSONString: [
             'ArgFuncArgDecode:JSON',
             'ArgFuncEncode',
             'ArgAdd:name',
             'ArgCombine:JSONString'
         ],
-        
-        JSONObject:[
+
+        JSONObject: [
             'ArgFuncArgDecode:JSON',
             'ArgFuncEncode',
             'ArgAdd:name',
             'ArgCombine:Object'
         ],
-        
-        URL:[
+
+        URL: [
             'ArgFuncArgDecode:JSON',
             'ArgFuncEncode',
             'ArgEncode:JSON',
@@ -715,13 +721,13 @@
 
             var processor = processorCreators[processName](description, option);
             if (typeof processor === 'function') {
-                processors.push(processor)
+                processors.push(processor);
             }
         });
 
         return processors;
     }
-    
+
     /**
      * 通过调用描述对象进行调用
      *
@@ -793,7 +799,7 @@
      * 对 description 中的 invoke 属性进行标准化处理
      *
      * @inner
-     * @param {Array|Object|string} description的invoke属性
+     * @param {Array|Object|string} invoke description的invoke属性
      * @return {Array}
      */
     function normalizeInvoke(invoke) {
@@ -821,7 +827,7 @@
                 if (invoke.after === 'JSON') {
                     result.push('ReturnDecode:JSON');
                 }
-                
+
                 return result;
 
         }
@@ -859,7 +865,7 @@
      */
     APIContainer.prototype.map = function (mapAPI) {
         mapAPI = mapAPI || function (name) {
-            return name
+            return name;
         };
 
         var apiObject = {};
@@ -916,19 +922,19 @@
             case 0:
                 return function () {
                     return process([]);
-                }
+                };
             case 1:
                 return function (arg1) {
                     return process([arg1]);
-                }
+                };
             case 2:
                 return function (arg1, arg2) {
                     return process([arg1, arg2]);
-                }
+                };
             case 3:
                 return function (arg1, arg2, arg3) {
                     return process([arg1, arg2, arg3]);
-                }
+                };
         }
 
         return function () {
@@ -937,7 +943,7 @@
     }
 
     // export object ===========
-    
+
     /**
      * 默认的 API Container 实例
      *
