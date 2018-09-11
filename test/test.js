@@ -98,6 +98,69 @@ describe('APIContainer', () => {
     });
 
 
+    it('add by Array arg', () => {
+        let sum = 0;
+
+        apis.add([
+            {
+                invoke: ["CallMethod"],
+                name: "api4",
+                method: "tAPI.api4",
+                args: [
+                    {name: 'one', value: 'number'},
+                    {name: 'two', value: 'number'}
+                ]
+            },
+
+            {
+                invoke: ["CallMethod"],
+                name: "api5",
+                method: "tAPI.api5",
+                args: [
+                    {name: 'one', value: 'number'},
+                    {name: 'two', value: 'number'}
+                ]
+            }
+        ]);
+        tAPI.api4 = tAPI.api5 = (one, two) => {
+            sum = one + two;
+        };
+
+        apis.invoke('api4', [1, 2, 3]);
+        expect(sum).to.be.equal(3);
+
+        apis.invoke('api5', [3, 2, 1]);
+        expect(sum).to.be.equal(5);
+    });
+
+    it('name conflict, throw Error', () => {
+        let sum = 0;
+
+        apis.add({
+            invoke: ["CallMethod"],
+            name: "api6",
+            method: "tAPI.api6",
+            args: [
+                {name: 'one', value: 'number'},
+                {name: 'two', value: 'number'}
+            ]
+        });
+        tAPI.api6 = (one, two) => {
+            sum = one + two;
+        };
+
+        expect(() => {
+            apis.add({
+                invoke: ["CallMethod"],
+                name: "api6",
+                method: "tAPI.api6",
+                args: [
+                    {name: 'one', value: 'number'},
+                    {name: 'two', value: 'number'}
+                ]
+            });
+        }).to.throw('API exists');
+    });
 });
 
 
@@ -1866,6 +1929,30 @@ describe('Shortcut method', () => {
         expect(() => {
             apiObj.thisTest({url: 'http://www.baidu.com/'});
         }).to.throw('Argument Error');
+
+        let otherApiObj = apis.map();
+        let otherReturnValue = otherApiObj.api3(
+            {url: 'http://www.baidu.com/'}, 
+            function (obj) {
+                expect(obj).to.be.a('object');
+                expect(obj.one).to.be.equal('hello');
+                expect(obj.two).to.be.equal(2);
+                expect(obj.three).to.be.a('boolean');
+                expect(obj.four.name).to.be.equal('hello');
+
+                expect(obj.url).to.be.equal('http://www.baidu.com/');
+                expect(obj.method).to.be.a('undefined');
+            }
+        );
+        
+        expect(otherReturnValue).to.be.a('object');
+        expect(otherReturnValue.one).to.be.equal('hello');
+        expect(otherReturnValue.two).to.be.equal(2);
+        expect(otherReturnValue.three).to.be.a('boolean');
+        expect(otherReturnValue.four.name).to.be.equal('hello');
+
+        expect(otherReturnValue.url).to.be.equal('http://www.baidu.com/');
+        expect(otherReturnValue.method).to.be.a('undefined');
     });
 
     it('many many args', () => {
