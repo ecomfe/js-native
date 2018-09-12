@@ -777,16 +777,7 @@
                 throw new Error('[jsNative] API exists: ' + name);
             }
 
-            var realDesc = {
-                name: description.name,
-                args: (description.args || []).slice(0),
-                invoke: normalizeInvoke(description.invoke),
-                method: description.method,
-                schema: description.schema,
-                authority: description.authority,
-                path: description.path,
-                handler: description.handler
-            };
+            var realDesc = normalizeDescription(description);
 
             this.apis.push(realDesc);
             this.apiIndex[name] = realDesc;
@@ -794,6 +785,26 @@
 
         return this;
     };
+
+    /**
+     * 对调用描述对象进行标准化处理
+     *
+     * @inner
+     * @param {Object} description 调用描述对象
+     * @return {Object}
+     */
+    function normalizeDescription(description) {
+        return {
+            name: description.name,
+            args: (description.args || []).slice(0),
+            invoke: normalizeInvoke(description.invoke),
+            method: description.method,
+            schema: description.schema,
+            authority: description.authority,
+            path: description.path,
+            handler: description.handler
+        };
+    }
 
     /**
      * 对 description 中的 invoke 属性进行标准化处理
@@ -842,7 +853,7 @@
      * @return {APIContainer}
      */
     APIContainer.prototype.fromNative = function (description) {
-        return this.add(invokeDescription(description));
+        return this.add(invokeDescription(normalizeDescription(description)));
     };
 
 
