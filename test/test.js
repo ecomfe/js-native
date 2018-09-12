@@ -207,6 +207,64 @@ describe('APIContainer', () => {
         apis.map().api8(250, 1, 666, 333, 37);
         expect(value).to.be.equal(666);
     });
+
+    it('no invoke property', () => {
+        apis.add({
+            name: "api9",
+            args: [
+                {name: 'one', value: 'number'}
+            ]
+        });
+
+        let value = apis.invoke('api9', [1, 2, 3]);
+        expect(value).to.be.a('Array');
+        expect(value[0]).to.be.equal(1);
+    });
+
+    it('fromNative', () => {
+        let sum = 0;
+
+        tAPI.nativeAPIs = () => {
+            return [
+                {
+                    invoke: ["CallMethod"],
+                    name: "api10",
+                    method: "tAPI.api10",
+                    args: [
+                        {name: 'one', value: 'number'},
+                        {name: 'two', value: 'number'}
+                    ]
+                },
+
+                {
+                    invoke: ["CallMethod"],
+                    name: "api11",
+                    method: "tAPI.api11",
+                    args: [
+                        {name: 'one', value: 'number'},
+                        {name: 'two', value: 'number'}
+                    ]
+                }
+            ];
+        };
+
+        apis.fromNative({
+            invoke: 'method',
+            method: "tAPI.nativeAPIs"
+        });
+
+        
+
+        tAPI.api10 = tAPI.api11 = (one, two) => {
+            sum = one + two;
+        };
+
+        apis.invoke('api11', [1, 2, 3]);
+        expect(sum).to.be.equal(3);
+
+        apis.invoke('api10', [3, 2, 1]);
+        expect(sum).to.be.equal(5);
+    });
 });
 
 
