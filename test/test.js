@@ -53,6 +53,10 @@ describe('APIContainer', () => {
 
         apis.invoke('api1');
         expect(invoked).to.be.true;
+
+        invoked = false;
+        apis.map().api1();
+        expect(invoked).to.be.true;
     });
 
     it('invoke a not defined api, no error, and return undefined', () => {
@@ -160,6 +164,48 @@ describe('APIContainer', () => {
                 ]
             });
         }).to.throw('API exists');
+    });
+
+    it('map one arg method', () => {
+        let value;
+
+        apis.add({
+            invoke: "method",
+            name: "api7",
+            method: "tAPI.api7",
+            args: [
+                {name: 'one', value: 'number'}
+            ]
+        });
+        tAPI.api7 = v => {
+            value = v;
+        };
+
+        apis.map().api7(250);
+        expect(value).to.be.equal(250);
+    });
+
+    it('map many args method', () => {
+        let value;
+
+        apis.add({
+            invoke: "method",
+            name: "api8",
+            method: "tAPI.api8",
+            args: [
+                {name: 'a1', value: 'number'},
+                {name: 'a2', value: 'number'},
+                {name: 'a3', value: 'number'},
+                {name: 'a4', value: 'number'},
+                {name: 'a5', value: 'number'}
+            ]
+        });
+        tAPI.api8 = (a1, a2, a3, a4, a5) => {
+            value = Math.max(a1, a2, a3, a4, a5);
+        };
+
+        apis.map().api8(250, 1, 666, 333, 37);
+        expect(value).to.be.equal(666);
     });
 });
 
@@ -2103,6 +2149,74 @@ describe('Shortcut method.json', () => {
         };
 
         let apiObj = apis.map({api3: 'thisTest'});
+
+        let returnValue = apiObj.thisTest(
+            {url: 'http://www.baidu.com/'}, 
+            function (obj) {
+                expect(obj).to.be.a('object');
+                expect(obj.one).to.be.equal('hello');
+                expect(obj.two).to.be.equal(2);
+                expect(obj.three).to.be.a('boolean');
+                expect(obj.four.name).to.be.equal('hello');
+
+                expect(obj.url).to.be.equal('http://www.baidu.com/');
+                expect(obj.method).to.be.a('undefined');
+            }
+        );
+        
+        expect(returnValue).to.be.a('object');
+        expect(returnValue.one).to.be.equal('hello');
+        expect(returnValue.two).to.be.equal(2);
+        expect(returnValue.three).to.be.a('boolean');
+        expect(returnValue.four.name).to.be.equal('hello');
+
+        expect(returnValue.url).to.be.equal('http://www.baidu.com/');
+        expect(returnValue.method).to.be.a('undefined');
+
+        expect(() => {
+            apiObj.thisTest({url: 'http://www.baidu.com/'});
+        }).to.throw('Argument Error');
+    });
+
+    it('object invoke declaration, call with map api, check args、return value and callback', () => {
+        apis.add({
+            invoke: {
+                "call": "method",
+                "check": true,
+                "before": "JSONStringInTurn",
+                "after": "JSON"
+            },
+            name: "api4",
+            method: "sc2API.api4",
+            args: [
+                {name: 'req', value: {
+                    type: {
+                        url: 'string',
+                        method: 'string='
+                    }
+                }},
+                {name: 'onsuccess', value: 'function'}
+            ]
+        });
+        sc2API.api4 = (req, onsuccess) => {
+
+            req = JSON.parse(req);
+            onsuccess = JSON.parse(onsuccess);
+
+            let data = JSON.stringify({
+                one: 'hello',
+                two: 2, 
+                three: true, 
+                four: {name: 'hello'},
+                url: req.url,
+                method: req.method
+            });
+
+            global[onsuccess](data);
+            return data;
+        };
+
+        let apiObj = apis.map({api4: 'thisTest'});
 
         let returnValue = apiObj.thisTest(
             {url: 'http://www.baidu.com/'}, 
