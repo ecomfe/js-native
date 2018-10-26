@@ -147,7 +147,7 @@ mod.fetch('my-url', 'GET', data => {});
 - [createContainer](#jsnativecreatecontainer) 方法。在不想用默认 [APIContainer](#apicontainer) 实例时，可以创建自己的 [APIContainer](#apicontainer) 实例
 - [invokeAPI](#jsnativeinvokeapi) 方法。可以直接调用 Native 通信接口
 
-jsNative 上的其他方法请参考 [APIContainer](#apicontainer) 的文档。
+jsNative 上的其他属性和方法请参考 [APIContainer](#apicontainer) 的文档。
 
 
 #### jsNative.createContainer
@@ -241,7 +241,7 @@ apiContainer.add({
         {"name": "method", "value": "string"},
         {"name": "onsuccess", "value": "function"}
     ]
-})
+});
 ```
 
 #### fromNative
@@ -346,4 +346,29 @@ mod.fetch('https://yourdomain.com/path', 'GET', data => {});
 // 通过 function map。mod2 对象上包含 request 方法，可直接调用
 let mod2 = apiContainer.map(name => name.slice(name.indexOf('.') + 1));
 mod2.request('https://yourdomain.com/path', 'GET', data => {});
+```
+
+#### title
+
+`说明`
+
+成员属性，`{string}`。默认值为 `jsNative`
+
+该属性主要用于添加 API 或调用 API 出错时，显示报错信息的标题。
+
+
+
+`示例`
+
+```js
+apiContainer.title = 'MyApi';
+apiContainer.add({
+    "invoke": "method",
+    "name": "net.request",
+    "method": "_naNet.request",
+    "args": [
+        {"name": "url", "value": "string"}
+    ]
+});
+apiContainer.invoke("net.request"); // throw Error Message: [MyApi Argument Error]...
 ```
