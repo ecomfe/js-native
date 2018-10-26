@@ -779,6 +779,27 @@ describe('Processor ArgCheck', () => {
             apis.invoke('argCheck19', [3, null]);
         }).to.not.throw(Error);
     });
+
+    it('custom error message title', () => {
+        apis.add({
+            invoke: ["ArgCheck"],
+            name: "argCheck20",
+            args: [
+                {name: 'one', value: 'number'},
+                {name: 'two', value: 'string'}
+            ]
+        });
+
+        apis.title = 'Hello';
+
+        expect(() => {
+            apis.invoke('argCheck20', ['1', '2']);
+        }).to.throw('[Hello ');
+
+        expect(() => {
+            apis.map().argCheck20('1', '2');
+        }).to.throw('[Hello ');
+    });
 });
 
 

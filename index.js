@@ -41,7 +41,7 @@
      * @param {Array} args 调用参数
      * @param {Array} declarations 参数声明列表
      */
-    function checkArgs(args, declarations) {
+    function checkArgs(args, declarations, apiContainer) {
         each(declarations, function (declaration, i) {
             var errorMsg;
             var value = normalizeValueDeclaration(declaration.value);
@@ -69,7 +69,8 @@
             }
 
             if (errorMsg) {
-                throw new Error('[jsNative Argument Error]' + declaration.name + errorMsg);
+                var title = apiContainer && apiContainer.title || 'jsNative';
+                throw new Error('[' + title + ' Argument Error]' + declaration.name + errorMsg);
             }
         });
     }
@@ -384,9 +385,9 @@
          * @param {Object} description 调用描述对象
          * @return {Function}
          */
-        ArgCheck: function (description) {
+        ArgCheck: function (description, option, apiContainer) {
             return function (args) {
-                checkArgs(args, description.args);
+                checkArgs(args, description.args, apiContainer);
                 return args;
             };
         },
@@ -705,9 +706,10 @@
      *
      * @inner
      * @param {Object} description 调用描述对象
+     * @param {Object} apiContainer description所属的api容器对象
      * @return {Function[]}
      */
-    function getProcessors(description) {
+    function getProcessors(description, apiContainer) {
         var processors = [];
 
         each(description.invoke, function (processName) {
@@ -719,7 +721,7 @@
                 processName = processName.slice(0, dotIndex);
             }
 
-            var processor = processorCreators[processName](description, option);
+            var processor = processorCreators[processName](description, option, apiContainer);
             if (typeof processor === 'function') {
                 processors.push(processor);
             }
@@ -736,11 +738,11 @@
      * @param {Array} args 调用参数
      * @return {*}
      */
-    function invokeDescription(description, args) {
+    function invokeDescription(description, args, apiContainer) {
         if (description) {
             args = args || [];
 
-            each(getProcessors(description), function (processor) {
+            each(getProcessors(description, apiContainer), function (processor) {
                 args = processor(args);
             });
 
@@ -756,6 +758,7 @@
     function APIContainer() {
         this.apis = [];
         this.apiIndex = {};
+        this.title = 'jsNative';
     }
 
     /**
@@ -774,7 +777,7 @@
             var name = description.name;
 
             if (this.apiIndex[name]) {
-                throw new Error('[jsNative] API exists: ' + name);
+                throw new Error('[' + this.title + '] API exists: ' + name);
             }
 
             var realDesc = normalizeDescription(description);
@@ -853,7 +856,7 @@
      * @return {APIContainer}
      */
     APIContainer.prototype.fromNative = function (description) {
-        return this.add(invokeDescription(normalizeDescription(description)));
+        return this.add(invokeDescription(normalizeDescription(description), null, this));
     };
 
 
@@ -865,7 +868,7 @@
      * @return {*}
      */
     APIContainer.prototype.invoke = function (name, args) {
-        return invokeDescription(this.apiIndex[name], args);
+        return invokeDescription(this.apiIndex[name], args, this);
     };
 
     /**
@@ -887,7 +890,7 @@
             var apiName = mapAPIName(mapAPI, api.name);
 
             if (apiName) {
-                apiObject[apiName] = buildAPIMethod(api);
+                apiObject[apiName] = buildAPIMethod(api, this);
             }
         }
 
@@ -918,8 +921,8 @@
      * @param {Object} description 调用描述对象
      * @return {Function}
      */
-    function buildAPIMethod(description) {
-        var processors = getProcessors(description);
+    function buildAPIMethod(description, apiContainer) {
+        var processors = getProcessors(description, apiContainer);
 
         function process(args) {
             each(processors, function (processor) {
@@ -968,7 +971,9 @@
      * @param {Object} description 调用描述对象
      * @param {Array} args 调用参数
      */
-    jsNative.invokeAPI = invokeDescription;
+    jsNative.invokeAPI = function (description, args) {
+        invokeDescription(description, args, this);
+    };
 
     /**
      * 创建 API Container
