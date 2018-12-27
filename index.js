@@ -69,7 +69,7 @@
             }
 
             if (errorMsg) {
-                var title = apiContainer && apiContainer.options.title || 'jsNative';
+                var title = apiContainer && apiContainer.options.errorTitle || 'jsNative';
                 throw new Error('[' + title + ' Argument Error]' + declaration.name + errorMsg);
             }
         });
@@ -757,7 +757,7 @@
      */
     function APIContainer(options) {
         this.options = {
-            title: 'jsNative'
+            errorTitle: 'jsNative'
         };
         this.config(options);
 
@@ -769,11 +769,13 @@
      * 配置参数，设置的参数将被合并到现有参数中
      *
      * @param {Object} options 参数对象
+     * @param {string=} options.errorTitle 显示报错信息的标题
+     * @param {string=} options.namingConflict 名字冲突时的处理策略
      * @return {APIContainer}
      */
     APIContainer.prototype.config = function (options) {
         options = options || {};
-        this.options.title = options.title || this.options.title;
+        this.options.errorTitle = options.errorTitle || this.options.errorTitle;
         this.options.namingConflict = options.namingConflict || this.options.namingConflict;
 
         return this;
@@ -795,7 +797,7 @@
             var name = description.name;
 
             if (this.apiIndex[name]) {
-                throw new Error('[' + this.options.title + '] API exists: ' + name);
+                throw new Error('[' + this.options.errorTitle + '] API exists: ' + name);
             }
 
             var realDesc = normalizeDescription(description);

@@ -790,7 +790,7 @@ describe('Processor ArgCheck', () => {
             ]
         });
 
-        apis.config({title: 'Hello'});
+        apis.config({errorTitle: 'Hello'});
 
         expect(() => {
             apis.invoke('argCheck20', ['1', '2']);
