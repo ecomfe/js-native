@@ -69,7 +69,7 @@
             }
 
             if (errorMsg) {
-                var title = apiContainer && apiContainer.title || 'jsNative';
+                var title = apiContainer && apiContainer.options.title || 'jsNative';
                 throw new Error('[' + title + ' Argument Error]' + declaration.name + errorMsg);
             }
         });
@@ -756,12 +756,13 @@
      * @class
      */
     function APIContainer(options) {
-        this.options = {};
+        this.options = {
+            title: 'jsNative'
+        };
         this.config(options);
 
         this.apis = [];
         this.apiIndex = {};
-        this.title = 'jsNative';
     }
 
     /**
@@ -770,7 +771,7 @@
      * @param {Object} options 参数对象
      * @return {APIContainer}
      */
-    apiContainer.prototype.config = function (options) {
+    APIContainer.prototype.config = function (options) {
         options = options || {};
         this.options.title = options.title || this.options.title;
         this.options.namingConflict = options.namingConflict || this.options.namingConflict;
@@ -794,7 +795,7 @@
             var name = description.name;
 
             if (this.apiIndex[name]) {
-                throw new Error('[' + this.title + '] API exists: ' + name);
+                throw new Error('[' + this.options.title + '] API exists: ' + name);
             }
 
             var realDesc = normalizeDescription(description);
