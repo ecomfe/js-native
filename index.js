@@ -755,11 +755,28 @@
      *
      * @class
      */
-    function APIContainer() {
+    function APIContainer(options) {
+        this.options = {};
+        this.config(options);
+
         this.apis = [];
         this.apiIndex = {};
         this.title = 'jsNative';
     }
+
+    /**
+     * 配置参数，设置的参数将被合并到现有参数中
+     *
+     * @param {Object} options 参数对象
+     * @return {APIContainer}
+     */
+    apiContainer.prototype.config = function (options) {
+        options = options || {};
+        this.options.title = options.title || this.options.title;
+        this.options.namingConflict = options.namingConflict || this.options.namingConflict;
+
+        return this;
+    };
 
     /**
      * 添加调用API
