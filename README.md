@@ -244,6 +244,37 @@ apiContainer.add({
 });
 ```
 
+#### config
+
+`说明`
+
+配置参数，设置的参数将被合并到现有参数中
+
+`参数`
+
+- `{Object}` options 参数对象
+- `{string=}` options.errorTitle 显示报错信息的标题
+- `{string=}` options.namingConflict 名字冲突时的处理策略
+
+namingConflict 的取值可以是：
+
+- error: 抛出错误
+- ignore: 保留现有api
+- override: 覆盖现有api
+
+`返回`
+
+`{APIContainer}` this
+
+`示例`
+
+```js
+apiContainer.config({
+    namingConflict: 'ignore'
+});
+```
+
+
 #### fromNative
 
 `说明`
