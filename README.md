@@ -379,27 +379,3 @@ let mod2 = apiContainer.map(name => name.slice(name.indexOf('.') + 1));
 mod2.request('https://yourdomain.com/path', 'GET', data => {});
 ```
 
-#### title
-
-`说明`
-
-成员属性，`{string}`。默认值为 `jsNative`
-
-该属性主要用于添加 API 或调用 API 出错时，显示报错信息的标题。
-
-
-
-`示例`
-
-```js
-apiContainer.title = 'MyApi';
-apiContainer.add({
-    "invoke": "method",
-    "name": "net.request",
-    "method": "_naNet.request",
-    "args": [
-        {"name": "url", "value": "string"}
-    ]
-});
-apiContainer.invoke("net.request"); // throw Error Message: [MyApi Argument Error]...
-```
