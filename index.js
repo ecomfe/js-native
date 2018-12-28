@@ -757,11 +757,13 @@
      */
     function APIContainer(options) {
         this.options = {
-            errorTitle: 'jsNative'
+            errorTitle: 'jsNative',
+            namingConflict: ''
         };
         this.config(options);
 
         this.apis = [];
+        this.apisLen = 0;
         this.apiIndex = {};
     }
 
@@ -775,6 +777,7 @@
      */
     APIContainer.prototype.config = function (options) {
         options = options || {};
+        // 再多就不能这么干了
         this.options.errorTitle = options.errorTitle || this.options.errorTitle;
         this.options.namingConflict = options.namingConflict || this.options.namingConflict;
 
@@ -796,14 +799,26 @@
         else if (typeof description === 'object') {
             var name = description.name;
 
-            if (this.apiIndex[name]) {
-                throw new Error('[' + this.options.errorTitle + '] API exists: ' + name);
+            if (this.apiIndex[name] != null) {
+                switch (this.options.namingConflict) {
+                    /* jshint ignore:start */
+                    case 'override':
+                        this.apis[this.apiIndex[name]] = normalizeDescription(description);
+
+                    case 'ignore':
+                        break;
+                    /* jshint ignore:end */
+
+                    default:
+                        throw new Error('[' + this.options.errorTitle + '] API exists: ' + name);
+                }
             }
+            else {
+                var realDesc = normalizeDescription(description);
 
-            var realDesc = normalizeDescription(description);
-
-            this.apis.push(realDesc);
-            this.apiIndex[name] = realDesc;
+                this.apiIndex[name] = this.apisLen;
+                this.apis[this.apisLen++] = realDesc;
+            }
         }
 
         return this;
@@ -888,7 +903,7 @@
      * @return {*}
      */
     APIContainer.prototype.invoke = function (name, args) {
-        return invokeDescription(this.apiIndex[name], args, this);
+        return invokeDescription(this.apis[this.apiIndex[name]], args, this);
     };
 
     /**
