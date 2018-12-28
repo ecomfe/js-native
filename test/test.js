@@ -265,6 +265,67 @@ describe('APIContainer', () => {
         apis.invoke('api10', [3, 2, 1]);
         expect(sum).to.be.equal(5);
     });
+
+    it('custom namingConflict', () => {
+        tAPI.api12 = (a, b) => {
+            return a + b;
+        };
+        tAPI.api122 = (a, b) => {
+            return a - b;
+        };
+
+        apis.add({
+            invoke: 'method',
+            name: "api12",
+            method: "tAPI.api12",
+            args: [
+                {name: 'one', value: 'number'},
+                {name: 'two', value: 'number'}
+            ]
+        });
+
+        expect(() => {
+            apis.add({
+                invoke: 'method',
+                name: "api12",
+                method: "tAPI.api122",
+                args: [
+                    {name: 'one', value: 'number'},
+                    {name: 'two', value: 'number'}
+                ]
+            });
+        }).to.throw('] API exists: api12');
+
+        apis.config({namingConflict: 'ignore'});
+
+        expect(apis.invoke('api12', [2, 1])).to.be.equal(3);
+
+        apis.add({
+            invoke: 'method',
+            name: "api12",
+            method: "tAPI.api122",
+            args: [
+                {name: 'one', value: 'number'},
+                {name: 'two', value: 'number'}
+            ]
+        });
+
+        expect(apis.invoke('api12', [2, 1])).to.be.equal(3);
+
+        apis.config({namingConflict: 'override'});
+
+        apis.add({
+            invoke: 'method',
+            name: "api12",
+            method: "tAPI.api122",
+            args: [
+                {name: 'one', value: 'number'},
+                {name: 'two', value: 'number'}
+            ]
+        });
+
+        expect(apis.invoke('api12', [2, 1])).to.be.equal(1);
+    });
 });
 
 
