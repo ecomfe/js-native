@@ -757,8 +757,7 @@
      */
     function APIContainer(options) {
         this.options = {
-            errorTitle: 'jsNative',
-            namingConflict: ''
+            errorTitle: 'jsNative'
         };
         this.config(options);
 
