@@ -181,8 +181,18 @@ describe('APIContainer', () => {
             value = v;
         };
 
-        apis.map().api7(250);
+        apis.add({
+            name: "apinotmap",
+            method: "tAPI.api7",
+            args: [
+                {name: 'one', value: 'number'}
+            ]
+        });
+
+        let mapAPIs = apis.map();
+        mapAPIs.api7(250);
         expect(value).to.be.equal(250);
+        expect(mapAPIs.apinotmap).to.be.a('undefined');
     });
 
     it('map many args method', () => {
