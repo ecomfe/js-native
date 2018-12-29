@@ -379,3 +379,7 @@ let mod2 = apiContainer.map(name => name.slice(name.indexOf('.') + 1));
 mod2.request('https://yourdomain.com/path', 'GET', data => {});
 ```
 
+## License
+
+jsNative is [MIT licensed](./LICENSE).
+
