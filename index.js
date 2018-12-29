@@ -848,7 +848,7 @@
      *
      * @inner
      * @param {Array|Object|string} invoke description的invoke属性
-     * @return {Array}
+     * @return {Array?}
      */
     function normalizeInvoke(invoke) {
         if (invoke instanceof Array) {
@@ -857,7 +857,7 @@
 
         switch (typeof invoke) {
             case 'string':
-                return INVOKE_SHORTCUT[invoke] || [];
+                return INVOKE_SHORTCUT[invoke];
 
             case 'object':
                 var result = [];
@@ -879,8 +879,6 @@
                 return result;
 
         }
-
-        return [];
     }
 
     /**
@@ -923,7 +921,7 @@
             var api = this.apis[i];
             var apiName = mapAPIName(mapAPI, api.name);
 
-            if (apiName) {
+            if (apiName && api.invoke) {
                 apiObject[apiName] = buildAPIMethod(api, this);
             }
         }
