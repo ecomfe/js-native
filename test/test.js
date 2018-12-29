@@ -218,7 +218,7 @@ describe('APIContainer', () => {
         expect(value).to.be.equal(666);
     });
 
-    it('no invoke property', () => {
+    it('no invoke property, throw Error', () => {
         apis.add({
             name: "api9",
             args: [
@@ -226,9 +226,9 @@ describe('APIContainer', () => {
             ]
         });
 
-        let value = apis.invoke('api9', [1, 2, 3]);
-        expect(value).to.be.a('Array');
-        expect(value[0]).to.be.equal(1);
+        expect(() => {
+            apis.invoke('api9', [1, 2, 3]);
+        }).to.throw('] invoke undefined: api9');
     });
 
     it('fromNative', () => {
