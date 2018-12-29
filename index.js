@@ -712,6 +712,10 @@
     function getProcessors(description, apiContainer) {
         var processors = [];
 
+        if (!description.invoke) {
+            throw new Error('[' + apiContainer.options.errorTitle + '] invoke undefined: ' + description.name);
+        }
+
         each(description.invoke, function (processName) {
             var dotIndex = processName.indexOf(':');
             var option;
