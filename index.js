@@ -229,7 +229,7 @@
     function wrapDecodeFuncArgs(args) {
         each(args, function (arg, i) {
             if (typeof arg === 'function') {
-                args[i] = wrapDecpdeFuncArg(arg);
+                args[i] = wrapDecodeFuncArg(arg);
             }
         });
 
@@ -243,7 +243,7 @@
      * @param {Function} fn 回调函数
      * @return {Function}
      */
-    function wrapDecpdeFuncArg(fn) {
+    function wrapDecodeFuncArg(fn) {
         return function (arg) {
             fn(JSON.parse(arg));
         };
