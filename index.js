@@ -740,6 +740,7 @@
         if (description) {
             args = args || [];
 
+            console.log('description:', description);
             each(getProcessors(description), function (processor) {
                 args = processor(args);
             });
@@ -968,7 +969,9 @@
      * @param {Object} description 调用描述对象
      * @param {Array} args 调用参数
      */
-    jsNative.invokeAPI = invokeDescription;
+    jsNative.invokeAPI = function (description, args) {
+        return invokeDescription(normalizeDescription(description));
+    };
 
     /**
      * 创建 API Container
