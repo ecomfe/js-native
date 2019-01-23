@@ -21,6 +21,32 @@ describe('Export Object', () => {
     });
 });
 
+describe('invokeAPI', () => {
+    let invoked = false;
+    let itAPI = {
+        request: () => {
+            invoked = true;
+            return '{"name": "hy"}';
+        }
+    };
+
+    global.itAPI = itAPI;
+
+    it('invokeAPI method invoke', () => {
+        jsNative.add({
+            invoke: "method.json",
+            name: "net.request",
+            method: "itAPI.request"
+        });
+        let res = jsNative.invokeAPI({
+            "invoke": "method.json",
+            "name": "net.request",
+            "method": "itAPI.request"
+        });
+        expect(invoked).to.be.equal(true);
+        expect(res).to.be.an('object');
+    });
+});
 
 describe('APIContainer', () => {
     let tAPI = {};
