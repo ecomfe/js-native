@@ -740,6 +740,7 @@
         if (description) {
             args = args || [];
 
+            console.log('description:', description);
             each(getProcessors(description), function (processor) {
                 args = processor(args);
             });
