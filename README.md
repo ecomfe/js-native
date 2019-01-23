@@ -147,7 +147,7 @@ mod.fetch('my-url', 'GET', data => {});
 - [createContainer](#jsnativecreatecontainer) 方法。在不想用默认 [APIContainer](#apicontainer) 实例时，可以创建自己的 [APIContainer](#apicontainer) 实例
 - [invokeAPI](#jsnativeinvokeapi) 方法。可以直接调用 Native 通信接口
 
-jsNative 上的其他方法请参考 [APIContainer](#apicontainer) 的文档。
+jsNative 上的其他属性和方法请参考 [APIContainer](#apicontainer) 的文档。
 
 
 #### jsNative.createContainer
@@ -241,8 +241,39 @@ apiContainer.add({
         {"name": "method", "value": "string"},
         {"name": "onsuccess", "value": "function"}
     ]
-})
+});
 ```
+
+#### config
+
+`说明`
+
+配置参数，设置的参数将被合并到现有参数中
+
+`参数`
+
+- `{Object}` options 参数对象
+- `{string=}` options.errorTitle 显示报错信息的标题
+- `{string=}` options.namingConflict 名字冲突时的处理策略
+
+namingConflict 的取值可以是：
+
+- error: 抛出错误
+- ignore: 保留现有api
+- override: 覆盖现有api
+
+`返回`
+
+`{APIContainer}` this
+
+`示例`
+
+```js
+apiContainer.config({
+    namingConflict: 'ignore'
+});
+```
+
 
 #### fromNative
 
@@ -347,3 +378,8 @@ mod.fetch('https://yourdomain.com/path', 'GET', data => {});
 let mod2 = apiContainer.map(name => name.slice(name.indexOf('.') + 1));
 mod2.request('https://yourdomain.com/path', 'GET', data => {});
 ```
+
+## License
+
+jsNative is [MIT licensed](./LICENSE).
+

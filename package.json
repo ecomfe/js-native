@@ -1,7 +1,7 @@
 {
   "name": "js-native",
-  "version": "0.1.0",
-  "description": "",
+  "version": "1.1.0",
+  "description": "JavaScript-Native bridge base on interface description.",
   "main": "index.js",
   "directories": {
     "doc": "doc"
@@ -17,7 +17,6 @@
   },
   "files": [
     "doc",
-    "dist",
     "index.js"
   ],
   "repository": {

@@ -207,8 +207,18 @@ describe('APIContainer', () => {
             value = v;
         };
 
-        apis.map().api7(250);
+        apis.add({
+            name: "apinotmap",
+            method: "tAPI.api7",
+            args: [
+                {name: 'one', value: 'number'}
+            ]
+        });
+
+        let mapAPIs = apis.map();
+        mapAPIs.api7(250);
         expect(value).to.be.equal(250);
+        expect(mapAPIs.apinotmap).to.be.a('undefined');
     });
 
     it('map many args method', () => {
@@ -234,7 +244,7 @@ describe('APIContainer', () => {
         expect(value).to.be.equal(666);
     });
 
-    it('no invoke property', () => {
+    it('no invoke property, throw Error', () => {
         apis.add({
             name: "api9",
             args: [
@@ -242,9 +252,9 @@ describe('APIContainer', () => {
             ]
         });
 
-        let value = apis.invoke('api9', [1, 2, 3]);
-        expect(value).to.be.a('Array');
-        expect(value[0]).to.be.equal(1);
+        expect(() => {
+            apis.invoke('api9', [1, 2, 3]);
+        }).to.throw('] invoke undefined: api9');
     });
 
     it('fromNative', () => {
@@ -290,6 +300,67 @@ describe('APIContainer', () => {
 
         apis.invoke('api10', [3, 2, 1]);
         expect(sum).to.be.equal(5);
+    });
+
+    it('custom namingConflict', () => {
+        tAPI.api12 = (a, b) => {
+            return a + b;
+        };
+        tAPI.api122 = (a, b) => {
+            return a - b;
+        };
+
+        apis.add({
+            invoke: 'method',
+            name: "api12",
+            method: "tAPI.api12",
+            args: [
+                {name: 'one', value: 'number'},
+                {name: 'two', value: 'number'}
+            ]
+        });
+
+        expect(() => {
+            apis.add({
+                invoke: 'method',
+                name: "api12",
+                method: "tAPI.api122",
+                args: [
+                    {name: 'one', value: 'number'},
+                    {name: 'two', value: 'number'}
+                ]
+            });
+        }).to.throw('] API exists: api12');
+
+        apis.config({namingConflict: 'ignore'});
+
+        expect(apis.invoke('api12', [2, 1])).to.be.equal(3);
+
+        apis.add({
+            invoke: 'method',
+            name: "api12",
+            method: "tAPI.api122",
+            args: [
+                {name: 'one', value: 'number'},
+                {name: 'two', value: 'number'}
+            ]
+        });
+
+        expect(apis.invoke('api12', [2, 1])).to.be.equal(3);
+
+        apis.config({namingConflict: 'override'});
+
+        apis.add({
+            invoke: 'method',
+            name: "api12",
+            method: "tAPI.api122",
+            args: [
+                {name: 'one', value: 'number'},
+                {name: 'two', value: 'number'}
+            ]
+        });
+
+        expect(apis.invoke('api12', [2, 1])).to.be.equal(1);
     });
 });
 
@@ -804,6 +875,27 @@ describe('Processor ArgCheck', () => {
         expect(() => {
             apis.invoke('argCheck19', [3, null]);
         }).to.not.throw(Error);
+    });
+
+    it('custom error message title', () => {
+        apis.add({
+            invoke: ["ArgCheck"],
+            name: "argCheck20",
+            args: [
+                {name: 'one', value: 'number'},
+                {name: 'two', value: 'string'}
+            ]
+        });
+
+        apis.config({errorTitle: 'Hello'});
+
+        expect(() => {
+            apis.invoke('argCheck20', ['1', '2']);
+        }).to.throw('[Hello ');
+
+        expect(() => {
+            apis.map().argCheck20('1', '2');
+        }).to.throw('[Hello ');
     });
 });
 

@@ -41,7 +41,7 @@
      * @param {Array} args 调用参数
      * @param {Array} declarations 参数声明列表
      */
-    function checkArgs(args, declarations) {
+    function checkArgs(args, declarations, apiContainer) {
         each(declarations, function (declaration, i) {
             var errorMsg;
             var value = normalizeValueDeclaration(declaration.value);
@@ -69,7 +69,8 @@
             }
 
             if (errorMsg) {
-                throw new Error('[jsNative Argument Error]' + declaration.name + errorMsg);
+                var title = apiContainer && apiContainer.options.errorTitle || 'jsNative';
+                throw new Error('[' + title + ' Argument Error]' + declaration.name + errorMsg);
             }
         });
     }
@@ -384,9 +385,9 @@
          * @param {Object} description 调用描述对象
          * @return {Function}
          */
-        ArgCheck: function (description) {
+        ArgCheck: function (description, option, apiContainer) {
             return function (args) {
-                checkArgs(args, description.args);
+                checkArgs(args, description.args, apiContainer);
                 return args;
             };
         },
@@ -705,10 +706,15 @@
      *
      * @inner
      * @param {Object} description 调用描述对象
+     * @param {Object} apiContainer description所属的api容器对象
      * @return {Function[]}
      */
-    function getProcessors(description) {
+    function getProcessors(description, apiContainer) {
         var processors = [];
+
+        if (!description.invoke) {
+            throw new Error('[' + apiContainer.options.errorTitle + '] invoke undefined: ' + description.name);
+        }
 
         each(description.invoke, function (processName) {
             var dotIndex = processName.indexOf(':');
@@ -719,7 +725,7 @@
                 processName = processName.slice(0, dotIndex);
             }
 
-            var processor = processorCreators[processName](description, option);
+            var processor = processorCreators[processName](description, option, apiContainer);
             if (typeof processor === 'function') {
                 processors.push(processor);
             }
@@ -736,11 +742,11 @@
      * @param {Array} args 调用参数
      * @return {*} 处理完成结果
      */
-    function invokeDescription(description, args) {
+    function invokeDescription(description, args, apiContainer) {
         if (description) {
             args = args || [];
 
-            each(getProcessors(description), function (processor) {
+            each(getProcessors(description, apiContainer), function (processor) {
                 args = processor(args);
             });
 
@@ -753,10 +759,33 @@
      *
      * @class
      */
-    function APIContainer() {
+    function APIContainer(options) {
+        this.options = {
+            errorTitle: 'jsNative'
+        };
+        this.config(options);
+
         this.apis = [];
+        this.apisLen = 0;
         this.apiIndex = {};
     }
+
+    /**
+     * 配置参数，设置的参数将被合并到现有参数中
+     *
+     * @param {Object} options 参数对象
+     * @param {string=} options.errorTitle 显示报错信息的标题
+     * @param {string=} options.namingConflict 名字冲突时的处理策略
+     * @return {APIContainer}
+     */
+    APIContainer.prototype.config = function (options) {
+        options = options || {};
+        // 再多就不能这么干了
+        this.options.errorTitle = options.errorTitle || this.options.errorTitle;
+        this.options.namingConflict = options.namingConflict || this.options.namingConflict;
+
+        return this;
+    };
 
     /**
      * 添加调用API
@@ -773,14 +802,26 @@
         else if (typeof description === 'object') {
             var name = description.name;
 
-            if (this.apiIndex[name]) {
-                throw new Error('[jsNative] API exists: ' + name);
+            if (this.apiIndex[name] != null) {
+                switch (this.options.namingConflict) {
+                    /* jshint ignore:start */
+                    case 'override':
+                        this.apis[this.apiIndex[name]] = normalizeDescription(description);
+
+                    case 'ignore':
+                        break;
+                    /* jshint ignore:end */
+
+                    default:
+                        throw new Error('[' + this.options.errorTitle + '] API exists: ' + name);
+                }
             }
+            else {
+                var realDesc = normalizeDescription(description);
 
-            var realDesc = normalizeDescription(description);
-
-            this.apis.push(realDesc);
-            this.apiIndex[name] = realDesc;
+                this.apiIndex[name] = this.apisLen;
+                this.apis[this.apisLen++] = realDesc;
+            }
         }
 
         return this;
@@ -811,7 +852,7 @@
      *
      * @inner
      * @param {Array|Object|string} invoke description的invoke属性
-     * @return {Array}
+     * @return {Array?}
      */
     function normalizeInvoke(invoke) {
         if (invoke instanceof Array) {
@@ -820,7 +861,7 @@
 
         switch (typeof invoke) {
             case 'string':
-                return INVOKE_SHORTCUT[invoke] || [];
+                return INVOKE_SHORTCUT[invoke];
 
             case 'object':
                 var result = [];
@@ -842,8 +883,6 @@
                 return result;
 
         }
-
-        return [];
     }
 
     /**
@@ -853,7 +892,7 @@
      * @return {APIContainer}
      */
     APIContainer.prototype.fromNative = function (description) {
-        return this.add(invokeDescription(normalizeDescription(description)));
+        return this.add(invokeDescription(normalizeDescription(description), null, this));
     };
 
 
@@ -865,7 +904,7 @@
      * @return {*}
      */
     APIContainer.prototype.invoke = function (name, args) {
-        return invokeDescription(this.apiIndex[name], args);
+        return invokeDescription(this.apis[this.apiIndex[name]], args, this);
     };
 
     /**
@@ -886,8 +925,8 @@
             var api = this.apis[i];
             var apiName = mapAPIName(mapAPI, api.name);
 
-            if (apiName) {
-                apiObject[apiName] = buildAPIMethod(api);
+            if (apiName && api.invoke) {
+                apiObject[apiName] = buildAPIMethod(api, this);
             }
         }
 
@@ -918,8 +957,8 @@
      * @param {Object} description 调用描述对象
      * @return {Function}
      */
-    function buildAPIMethod(description) {
-        var processors = getProcessors(description);
+    function buildAPIMethod(description, apiContainer) {
+        var processors = getProcessors(description, apiContainer);
 
         function process(args) {
             each(processors, function (processor) {
@@ -970,7 +1009,7 @@
      * @return {*}
      */
     jsNative.invokeAPI = function (description, args) {
-        return invokeDescription(normalizeDescription(description));
+        return invokeDescription(normalizeDescription(description), args, this);
     };
 
     /**
