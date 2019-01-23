@@ -734,7 +734,7 @@
      * @inner
      * @param {Object} description 调用描述对象
      * @param {Array} args 调用参数
-     * @return {*}
+     * @return {*} 处理完成结果
      */
     function invokeDescription(description, args) {
         if (description) {
@@ -967,6 +967,7 @@
      *
      * @param {Object} description 调用描述对象
      * @param {Array} args 调用参数
+     * @return {*}
      */
     jsNative.invokeAPI = function (description, args) {
         return invokeDescription(normalizeDescription(description));
