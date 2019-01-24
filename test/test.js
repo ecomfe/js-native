@@ -362,6 +362,39 @@ describe('APIContainer', () => {
 
         expect(apis.invoke('api12', [2, 1])).to.be.equal(1);
     });
+
+    it('addProccessorCreator', () => {
+        tAPI.api13 = (a, b) => {
+            return a + b;
+        };
+        apis.addProccessorCreator({
+            CallTestMessage: (description, option) => args => {
+                return true;
+            }
+        });
+
+        apis.add({
+            invoke: ['CallTestMessage'],
+            name: "api13",
+            method: "tAPI.api13",
+            args: [
+                {name: 'one', value: 'number'},
+                {name: 'two', value: 'number'}
+            ]
+        });
+
+        expect(apis.invoke('api13', [2, 1])).to.be.equal(true);
+    });
+
+    it('addProccessorCreator error', () => {
+        expect(() => {
+            apis.addProccessorCreator({
+                ArgCheck: (description, option) => args => {
+                    return true;
+                }
+            });
+        }).to.throw('processorCreators exists');
+    });
 });
 
 
