@@ -1,6 +1,7 @@
 /**
  * @file js-native 通信管理
  * @author errorrik(errorrik@gmail.com)
+ * @author houyu(785798835@qq.com)
  */
 
 (function (root) {
@@ -370,213 +371,21 @@
         document.body.removeChild(iframe);
     }
 
-
     /**
-     * processor 创建方法集合
+     * 映射调用对象描述中的名称
      *
      * @inner
-     * @type {Object}
+     * @param {Object|Function} mapAPI 调用描述对象名称的映射表或映射函数
+     * @param {string} name 调用描述对象中的名称
+     * @return {string}
      */
-    var processorCreators = {
-
-        /**
-         * 创建参数检查处理函数
-         *
-         * @param {Object} description 调用描述对象
-         * @return {Function}
-         */
-        ArgCheck: function (description, option, apiContainer) {
-            return function (args) {
-                checkArgs(args, description.args, apiContainer);
-                return args;
-            };
-        },
-
-        /**
-         * 创建解码回调函数参数包装的处理函数
-         *
-         * @param {Object} description 调用描述对象
-         * @param {string} option 处理参数
-         * @return {Function}
-         */
-        ArgFuncArgDecode: function (description, option) {
-            return option === 'JSON'
-                ? wrapDecodeFuncArgs
-                : returnRaw;
-        },
-
-        /**
-         * 创建回调函数序列化的处理函数
-         *
-         * @return {Function}
-         */
-        ArgFuncEncode: function () {
-            return wrapArgFunc;
-        },
-
-        /**
-         * 创建参数序列化的处理函数
-         *
-         * @param {Object} description 调用描述对象
-         * @param {string} option 处理参数
-         * @return {Function}
-         */
-        ArgEncode: function (description, option) {
-            return option === 'JSON'
-                ? argJSONEncode
-                : returnRaw;
-        },
-
-        /**
-         * 创建从调用描述对象中添加额外参数的处理函数
-         *
-         * @param {Object} description 调用描述对象
-         * @param {string} option 处理参数
-         * @return {Function}
-         */
-        ArgAdd: function (description, option) {
-            var argLen = description.args.length;
-
-            description.args.push({
-                name: '_' + option,
-                value: '*'
-            });
-
-            var value = description[option];
-            return function (args) {
-                args[argLen] = value;
-                return args;
-            };
-        },
-
-        /**
-         * 创建参数合并的处理函数
-         *
-         * @param {Object} description 调用描述对象
-         * @param {string} option 处理参数
-         * @return {Function}
-         */
-        ArgCombine: function (description, option) {
-            switch (option) {
-                case 'URL':
-                    var prefix = description.schema + '://' + description.authority + description.path;
-                    return function (args) {
-                        var result = [];
-
-                        each(description.args, function (declaration, i) {
-                            var arg = args[i];
-                            if (arg != null) {
-                                result.push(declaration.name + '=' + encodeURIComponent(arg));
-                            }
-                        });
-
-                        var queryStr = result.join('&');
-
-                        return queryStr ? prefix + '?' + queryStr : prefix;
-                    };
-
-                case 'Object':
-                    return function (args) {
-                        return argCombine(args, description.args);
-                    };
-
-                case 'JSONString':
-                    return function (args) {
-                        return JSON.stringify(argCombine(args, description.args));
-                    };
-            }
-
-            return returnRaw;
-        },
-
-        /**
-         * 创建方法调用的处理函数
-         *
-         * @param {Object} description 调用描述对象
-         * @param {string} option 处理参数
-         * @return {Function}
-         */
-        CallMethod: function (description, option) {
-            var methodOwner;
-            var methodName;
-            function findMethod() {
-                if (!methodOwner) {
-                    var segs = description.method.split('.');
-                    var lastIndex = segs.length - 1;
-
-                    methodName = segs[lastIndex];
-                    methodOwner = root;
-                    for (var i = 0; i < lastIndex; i++) {
-                        methodOwner = methodOwner[segs[i]];
-                    }
-                }
-            }
-
-            if (description.args.length < 5) {
-                return function (args) {
-                    findMethod();
-                    return methodOwner[methodName](args[0], args[1], args[2], args[3]);
-                };
-            }
-
-            return function (args) {
-                findMethod();
-                return methodOwner[methodName].apply(methodOwner, args);
-            };
-        },
-
-        /**
-         * 创建 prompt 调用的处理函数
-         *
-         * @return {Function}
-         */
-        CallPrompt: function () {
-            return callPrompt;
-        },
-
-        /**
-         * 创建 iframe 调用的处理函数
-         *
-         * @return {Function}
-         */
-        CallIframe: function () {
-            return callIframe;
-        },
-
-        /**
-         * 创建 location 调用的处理函数
-         *
-         * @return {Function}
-         */
-        CallLocation: function () {
-            return callLocation;
-        },
-
-        /**
-         * 创建 postMessage 调用的处理函数
-         *
-         * @param {Object} description 调用描述对象
-         * @return {Function}
-         */
-        CallMessage: function (description) {
-            return function (args) {
-                root.webkit.messageHandlers[description.handler].postMessage(args);
-            };
-        },
-
-        /**
-         * 创建对返回值进行解码的处理函数
-         *
-         * @param {Object} description 调用描述对象
-         * @param {string} option 处理参数
-         * @return {Function}
-         */
-        ReturnDecode: function (description, option) {
-            return option === 'JSON'
-                ? JSON.parse
-                : returnRaw;
+    function mapAPIName(mapAPI, name) {
+        if (typeof mapAPI === 'function') {
+            return mapAPI(name);
         }
-    };
+
+        return mapAPI[name];
+    }
 
     /**
      * 调用描述对象的 invoke 属性为字符串时的快捷映射表
@@ -701,295 +510,499 @@
         ]
     };
 
-    /**
-     * 生成调用过程处理函数的列表
-     *
-     * @inner
-     * @param {Object} description 调用描述对象
-     * @param {Object} apiContainer description所属的api容器对象
-     * @return {Function[]}
-     */
-    function getProcessors(description, apiContainer) {
-        var processors = [];
+    function APIContainer() {
+        /**
+         * processor 创建方法集合
+         *
+         * @inner
+         * @type {Object}
+         */
+        var processorCreators = {
 
-        if (!description.invoke) {
-            throw new Error('[' + apiContainer.options.errorTitle + '] invoke undefined: ' + description.name);
-        }
+            /**
+             * 创建参数检查处理函数
+             *
+             * @param {Object} description 调用描述对象
+             * @return {Function}
+             */
+            ArgCheck: function (description, option, apiContainer) {
+                return function (args) {
+                    checkArgs(args, description.args, apiContainer);
+                    return args;
+                };
+            },
 
-        each(description.invoke, function (processName) {
-            var dotIndex = processName.indexOf(':');
-            var option;
+            /**
+             * 创建解码回调函数参数包装的处理函数
+             *
+             * @param {Object} description 调用描述对象
+             * @param {string} option 处理参数
+             * @return {Function}
+             */
+            ArgFuncArgDecode: function (description, option) {
+                return option === 'JSON'
+                    ? wrapDecodeFuncArgs
+                    : returnRaw;
+            },
 
-            if (dotIndex > 0) {
-                option = processName.slice(dotIndex + 1);
-                processName = processName.slice(0, dotIndex);
+            /**
+             * 创建回调函数序列化的处理函数
+             *
+             * @return {Function}
+             */
+            ArgFuncEncode: function () {
+                return wrapArgFunc;
+            },
+
+            /**
+             * 创建参数序列化的处理函数
+             *
+             * @param {Object} description 调用描述对象
+             * @param {string} option 处理参数
+             * @return {Function}
+             */
+            ArgEncode: function (description, option) {
+                return option === 'JSON'
+                    ? argJSONEncode
+                    : returnRaw;
+            },
+
+            /**
+             * 创建从调用描述对象中添加额外参数的处理函数
+             *
+             * @param {Object} description 调用描述对象
+             * @param {string} option 处理参数
+             * @return {Function}
+             */
+            ArgAdd: function (description, option) {
+                var argLen = description.args.length;
+
+                description.args.push({
+                    name: '_' + option,
+                    value: '*'
+                });
+
+                var value = description[option];
+                return function (args) {
+                    args[argLen] = value;
+                    return args;
+                };
+            },
+
+            /**
+             * 创建参数合并的处理函数
+             *
+             * @param {Object} description 调用描述对象
+             * @param {string} option 处理参数
+             * @return {Function}
+             */
+            ArgCombine: function (description, option) {
+                switch (option) {
+                    case 'URL':
+                        var prefix = description.schema + '://' + description.authority + description.path;
+                        return function (args) {
+                            var result = [];
+
+                            each(description.args, function (declaration, i) {
+                                var arg = args[i];
+                                if (arg != null) {
+                                    result.push(declaration.name + '=' + encodeURIComponent(arg));
+                                }
+                            });
+
+                            var queryStr = result.join('&');
+
+                            return queryStr ? prefix + '?' + queryStr : prefix;
+                        };
+
+                    case 'Object':
+                        return function (args) {
+                            return argCombine(args, description.args);
+                        };
+
+                    case 'JSONString':
+                        return function (args) {
+                            return JSON.stringify(argCombine(args, description.args));
+                        };
+                }
+
+                return returnRaw;
+            },
+
+            /**
+             * 创建方法调用的处理函数
+             *
+             * @param {Object} description 调用描述对象
+             * @param {string} option 处理参数
+             * @return {Function}
+             */
+            CallMethod: function (description, option) {
+                var methodOwner;
+                var methodName;
+                function findMethod() {
+                    if (!methodOwner) {
+                        var segs = description.method.split('.');
+                        var lastIndex = segs.length - 1;
+
+                        methodName = segs[lastIndex];
+                        methodOwner = root;
+                        for (var i = 0; i < lastIndex; i++) {
+                            methodOwner = methodOwner[segs[i]];
+                        }
+                    }
+                }
+
+                if (description.args.length < 5) {
+                    return function (args) {
+                        findMethod();
+                        return methodOwner[methodName](args[0], args[1], args[2], args[3]);
+                    };
+                }
+
+                return function (args) {
+                    findMethod();
+                    return methodOwner[methodName].apply(methodOwner, args);
+                };
+            },
+
+            /**
+             * 创建 prompt 调用的处理函数
+             *
+             * @return {Function}
+             */
+            CallPrompt: function () {
+                return callPrompt;
+            },
+
+            /**
+             * 创建 iframe 调用的处理函数
+             *
+             * @return {Function}
+             */
+            CallIframe: function () {
+                return callIframe;
+            },
+
+            /**
+             * 创建 location 调用的处理函数
+             *
+             * @return {Function}
+             */
+            CallLocation: function () {
+                return callLocation;
+            },
+
+            /**
+             * 创建 postMessage 调用的处理函数
+             *
+             * @param {Object} description 调用描述对象
+             * @return {Function}
+             */
+            CallMessage: function (description) {
+                return function (args) {
+                    root.webkit.messageHandlers[description.handler].postMessage(args);
+                };
+            },
+
+            /**
+             * 创建对返回值进行解码的处理函数
+             *
+             * @param {Object} description 调用描述对象
+             * @param {string} option 处理参数
+             * @return {Function}
+             */
+            ReturnDecode: function (description, option) {
+                return option === 'JSON'
+                    ? JSON.parse
+                    : returnRaw;
+            }
+        };
+
+        /**
+         * 生成调用过程处理函数的列表
+         *
+         * @inner
+         * @param {Object} description 调用描述对象
+         * @param {Object} apiContainer description所属的api容器对象
+         * @return {Function[]}
+         */
+        function getProcessors(description, apiContainer) {
+            var processors = [];
+
+            if (!description.invoke) {
+                throw new Error('[' + apiContainer.options.errorTitle + '] invoke undefined: ' + description.name);
             }
 
-            var processor = processorCreators[processName](description, option, apiContainer);
-            if (typeof processor === 'function') {
-                processors.push(processor);
-            }
-        });
+            each(description.invoke, function (processName) {
+                var dotIndex = processName.indexOf(':');
+                var option;
 
-        return processors;
-    }
+                if (dotIndex > 0) {
+                    option = processName.slice(dotIndex + 1);
+                    processName = processName.slice(0, dotIndex);
+                }
 
-    /**
-     * 通过调用描述对象进行调用
-     *
-     * @inner
-     * @param {Object} description 调用描述对象
-     * @param {Array} args 调用参数
-     * @return {*} 处理完成结果
-     */
-    function invokeDescription(description, args, apiContainer) {
-        if (description) {
-            args = args || [];
-
-            each(getProcessors(description, apiContainer), function (processor) {
-                args = processor(args);
+                var processor = processorCreators[processName](description, option, apiContainer);
+                if (typeof processor === 'function') {
+                    processors.push(processor);
+                }
             });
 
-            return args;
+            return processors;
         }
-    }
 
-    /**
-     * 调用 API 容器类
-     *
-     * @class
-     */
-    function APIContainer(options) {
-        this.options = {
-            errorTitle: 'jsNative'
-        };
-        this.config(options);
+        /**
+         * 通过调用描述对象进行调用
+         *
+         * @inner
+         * @param {Object} description 调用描述对象
+         * @param {Array} args 调用参数
+         * @return {*} 处理完成结果
+         */
+        function invokeDescription(description, args, apiContainer) {
+            if (description) {
+                args = args || [];
 
-        this.apis = [];
-        this.apisLen = 0;
-        this.apiIndex = {};
-    }
+                each(getProcessors(description, apiContainer), function (processor) {
+                    args = processor(args);
+                });
 
-    /**
-     * 配置参数，设置的参数将被合并到现有参数中
-     *
-     * @param {Object} options 参数对象
-     * @param {string=} options.errorTitle 显示报错信息的标题
-     * @param {string=} options.namingConflict 名字冲突时的处理策略
-     * @return {APIContainer}
-     */
-    APIContainer.prototype.config = function (options) {
-        options = options || {};
-        // 再多就不能这么干了
-        this.options.errorTitle = options.errorTitle || this.options.errorTitle;
-        this.options.namingConflict = options.namingConflict || this.options.namingConflict;
-
-        return this;
-    };
-
-    /**
-     * 添加调用API
-     *
-     * @param {Object|Array} description 调用描述对象
-     * @return {APIContainer}
-     */
-    APIContainer.prototype.add = function (description) {
-        if (description instanceof Array) {
-            for (var i = 0; i < description.length; i++) {
-                this.add(description[i]);
-            }
-        }
-        else if (typeof description === 'object') {
-            var name = description.name;
-
-            if (this.apiIndex[name] != null) {
-                switch (this.options.namingConflict) {
-                    /* jshint ignore:start */
-                    case 'override':
-                        this.apis[this.apiIndex[name]] = normalizeDescription(description);
-
-                    case 'ignore':
-                        break;
-                    /* jshint ignore:end */
-
-                    default:
-                        throw new Error('[' + this.options.errorTitle + '] API exists: ' + name);
-                }
-            }
-            else {
-                var realDesc = normalizeDescription(description);
-
-                this.apiIndex[name] = this.apisLen;
-                this.apis[this.apisLen++] = realDesc;
+                return args;
             }
         }
 
-        return this;
-    };
+        /**
+         * 调用 API 容器类
+         *
+         * @class
+         */
+        function APIContainerInner(options) {
+            this.options = {
+                errorTitle: 'jsNative'
+            };
+            this.config(options);
 
-    /**
-     * 对调用描述对象进行标准化处理
-     *
-     * @inner
-     * @param {Object} description 调用描述对象
-     * @return {Object}
-     */
-    function normalizeDescription(description) {
-        return {
-            name: description.name,
-            args: (description.args || []).slice(0),
-            invoke: normalizeInvoke(description.invoke),
-            method: description.method,
-            schema: description.schema,
-            authority: description.authority,
-            path: description.path,
-            handler: description.handler
-        };
-    }
-
-    /**
-     * 对 description 中的 invoke 属性进行标准化处理
-     *
-     * @inner
-     * @param {Array|Object|string} invoke description的invoke属性
-     * @return {Array?}
-     */
-    function normalizeInvoke(invoke) {
-        if (invoke instanceof Array) {
-            return invoke;
+            this.apis = [];
+            this.apisLen = 0;
+            this.apiIndex = {};
         }
 
-        switch (typeof invoke) {
-            case 'string':
-                return INVOKE_SHORTCUT[invoke];
+        /**
+         * 配置参数，设置的参数将被合并到现有参数中
+         *
+         * @param {Object} options 参数对象
+         * @param {string=} options.errorTitle 显示报错信息的标题
+         * @param {string=} options.namingConflict 名字冲突时的处理策略
+         * @return {APIContainerInner}
+         */
+        APIContainerInner.prototype.config = function (options) {
+            options = options || {};
+            // 再多就不能这么干了
+            this.options.errorTitle = options.errorTitle || this.options.errorTitle;
+            this.options.namingConflict = options.namingConflict || this.options.namingConflict;
 
-            case 'object':
-                var result = [];
-
-                if (invoke.check) {
-                    result.push('ArgCheck');
-                }
-
-                if (invoke.before) {
-                    result = result.concat(INVOKE_BEFORE_MAP[invoke.before]);
-                }
-
-                result.push(INVOKE_CALL_MAP[invoke.call]);
-
-                if (invoke.after === 'JSON') {
-                    result.push('ReturnDecode:JSON');
-                }
-
-                return result;
-
-        }
-    }
-
-    /**
-     * 从一次 Native 的调用结果中添加调用API
-     *
-     * @param {Object} description 调用描述对象
-     * @return {APIContainer}
-     */
-    APIContainer.prototype.fromNative = function (description) {
-        return this.add(invokeDescription(normalizeDescription(description), null, this));
-    };
-
-
-    /**
-     * 通过描述对象的 name 属性进行调用
-     *
-     * @param {string} name 调用描述对象名
-     * @param {Array} args 调用参数
-     * @return {*}
-     */
-    APIContainer.prototype.invoke = function (name, args) {
-        return invokeDescription(this.apis[this.apiIndex[name]], args, this);
-    };
-
-    /**
-     * 生成一个对象，其上的方法是 API 容器对象中调用描述对象编译成的，可被直接调用的函数
-     *
-     * @param {Object|Function} mapAPI 调用描述对象名称的映射表或映射函数
-     * @return {Object}
-     */
-    APIContainer.prototype.map = function (mapAPI) {
-        mapAPI = mapAPI || function (name) {
-            return name;
+            return this;
         };
 
-        var apiObject = {};
+        /**
+         * 添加调用API
+         *
+         * @param {Object|Array} description 调用描述对象
+         * @return {APIContainerInner}
+         */
+        APIContainerInner.prototype.add = function (description) {
+            if (description instanceof Array) {
+                for (var i = 0; i < description.length; i++) {
+                    this.add(description[i]);
+                }
+            }
+            else if (typeof description === 'object') {
+                var name = description.name;
 
+                if (this.apiIndex[name] != null) {
+                    switch (this.options.namingConflict) {
+                        /* jshint ignore:start */
+                        case 'override':
+                            this.apis[this.apiIndex[name]] = normalizeDescription(description);
 
-        for (var i = 0; i < this.apis.length; i++) {
-            var api = this.apis[i];
-            var apiName = mapAPIName(mapAPI, api.name);
+                        case 'ignore':
+                            break;
+                        /* jshint ignore:end */
 
-            if (apiName && api.invoke) {
-                apiObject[apiName] = buildAPIMethod(api, this);
+                        default:
+                            throw new Error('[' + this.options.errorTitle + '] API exists: ' + name);
+                    }
+                }
+                else {
+                    var realDesc = normalizeDescription(description);
+
+                    this.apiIndex[name] = this.apisLen;
+                    this.apis[this.apisLen++] = realDesc;
+                }
+            }
+
+            return this;
+        };
+
+        /**
+         * 对调用描述对象进行标准化处理
+         *
+         * @inner
+         * @param {Object} description 调用描述对象
+         * @return {Object}
+         */
+        function normalizeDescription(description) {
+            return {
+                name: description.name,
+                args: (description.args || []).slice(0),
+                invoke: normalizeInvoke(description.invoke),
+                method: description.method,
+                schema: description.schema,
+                authority: description.authority,
+                path: description.path,
+                handler: description.handler
+            };
+        }
+
+        /**
+         * 对 description 中的 invoke 属性进行标准化处理
+         *
+         * @inner
+         * @param {Array|Object|string} invoke description的invoke属性
+         * @return {Array?}
+         */
+        function normalizeInvoke(invoke) {
+            if (invoke instanceof Array) {
+                return invoke;
+            }
+
+            switch (typeof invoke) {
+                case 'string':
+                    return INVOKE_SHORTCUT[invoke];
+
+                case 'object':
+                    var result = [];
+
+                    if (invoke.check) {
+                        result.push('ArgCheck');
+                    }
+
+                    if (invoke.before) {
+                        result = result.concat(INVOKE_BEFORE_MAP[invoke.before]);
+                    }
+
+                    result.push(INVOKE_CALL_MAP[invoke.call]);
+
+                    if (invoke.after === 'JSON') {
+                        result.push('ReturnDecode:JSON');
+                    }
+
+                    return result;
+
             }
         }
 
-        return apiObject;
-    };
+        /**
+         * 把调用描述对象编译成可被直接调用的函数
+         *
+         * @inner
+         * @param {Object} description 调用描述对象
+         * @return {Function}
+         */
+        function buildAPIMethod(description, apiContainer) {
+            var processors = getProcessors(description, apiContainer);
 
+            function process(args) {
+                each(processors, function (processor) {
+                    args = processor(args);
+                });
 
-    /**
-     * 映射调用对象描述中的名称
-     *
-     * @inner
-     * @param {Object|Function} mapAPI 调用描述对象名称的映射表或映射函数
-     * @param {string} name 调用描述对象中的名称
-     * @return {string}
-     */
-    function mapAPIName(mapAPI, name) {
-        if (typeof mapAPI === 'function') {
-            return mapAPI(name);
+                return args;
+            }
+
+            return function () {
+                return process(Array.prototype.slice.call(arguments, 0, description.args.length));
+            };
         }
 
-        return mapAPI[name];
-    }
-
-    /**
-     * 把调用描述对象编译成可被直接调用的函数
-     *
-     * @inner
-     * @param {Object} description 调用描述对象
-     * @return {Function}
-     */
-    function buildAPIMethod(description, apiContainer) {
-        var processors = getProcessors(description, apiContainer);
-
-        function process(args) {
-            each(processors, function (processor) {
-                args = processor(args);
-            });
-
-            return args;
-        }
-
-        switch (description.args.length) {
-            case 0:
-                return function () {
-                    return process([]);
-                };
-            case 1:
-                return function (arg1) {
-                    return process([arg1]);
-                };
-            case 2:
-                return function (arg1, arg2) {
-                    return process([arg1, arg2]);
-                };
-            case 3:
-                return function (arg1, arg2, arg3) {
-                    return process([arg1, arg2, arg3]);
-                };
-        }
-
-        return function () {
-            return process(Array.prototype.slice.call(arguments));
+        /**
+         * 从一次 Native 的调用结果中添加调用API
+         *
+         * @param {Object} description 调用描述对象
+         * @return {APIContainerInner}
+         */
+        APIContainerInner.prototype.fromNative = function (description) {
+            return this.add(invokeDescription(normalizeDescription(description), null, this));
         };
+
+
+        /**
+         * 通过描述对象的 name 属性进行调用
+         *
+         * @param {string} name 调用描述对象名
+         * @param {Array} args 调用参数
+         * @return {*}
+         */
+        APIContainerInner.prototype.invoke = function (name, args) {
+            return invokeDescription(this.apis[this.apiIndex[name]], args, this);
+        };
+
+        /**
+         * 生成一个对象，其上的方法是 API 容器对象中调用描述对象编译成的，可被直接调用的函数
+         *
+         * @param {Object|Function} mapAPI 调用描述对象名称的映射表或映射函数
+         * @return {Object}
+         */
+        APIContainerInner.prototype.map = function (mapAPI) {
+            mapAPI = mapAPI || function (name) {
+                return name;
+            };
+
+            var apiObject = {};
+
+
+            for (var i = 0; i < this.apis.length; i++) {
+                var api = this.apis[i];
+                var apiName = mapAPIName(mapAPI, api.name);
+
+                if (apiName && api.invoke) {
+                    apiObject[apiName] = buildAPIMethod(api, this);
+                }
+            }
+
+            return apiObject;
+        };
+
+        /**
+         * 通过调用描述对象进行调用
+         *
+         * @param {Object} description 调用描述对象
+         * @param {Array} args 调用参数
+         * @return {*}
+         */
+        APIContainerInner.prototype.invokeAPI = function (description, args) {
+            return invokeDescription(normalizeDescription(description), args, this);
+        };
+
+        /**
+         * 开发者补充processorsCreators的自定义集(TIPS:不能刷掉内置的proccessorCreators)
+         *
+         * @param {Object} processorsCreatorsFragment 开发者需要新增的processorCreators的集合
+         * @return {APIContainerInner}
+         */
+        APIContainerInner.prototype.addProccessorCreator = function (processorCreatorsFragment) {
+            for (var key in processorCreatorsFragment) {
+                if (processorCreatorsFragment.hasOwnProperty(key)) {
+                    if (processorCreators[key]) {
+                        throw new Error('[jsNative] processorCreators exists: ' + key);
+                    }
+                    processorCreators[key] = processorCreatorsFragment[key];
+                }
+            }
+            return this;
+        };
+
+        return new APIContainerInner();
     }
 
     // export object ===========
@@ -1000,17 +1013,6 @@
      * @type {APIContainer}
      */
     var jsNative = new APIContainer();
-
-    /**
-     * 通过调用描述对象进行调用
-     *
-     * @param {Object} description 调用描述对象
-     * @param {Array} args 调用参数
-     * @return {*}
-     */
-    jsNative.invokeAPI = function (description, args) {
-        return invokeDescription(normalizeDescription(description), args, this);
-    };
 
     /**
      * 创建 API Container
