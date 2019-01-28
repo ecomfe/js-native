@@ -367,11 +367,12 @@ describe('APIContainer', () => {
         tAPI.api13 = (a, b) => {
             return a + b;
         };
-        apis.addProccessorCreator({
-            CallTestMessage: (description, option) => args => {
+        apis.addProccessorCreator(
+            'CallTestMessage',
+            (description, option) => args => {
                 return true;
             }
-        });
+        );
 
         apis.add({
             invoke: ['CallTestMessage'],
@@ -388,11 +389,12 @@ describe('APIContainer', () => {
 
     it('addProccessorCreator error', () => {
         expect(() => {
-            apis.addProccessorCreator({
-                ArgCheck: (description, option) => args => {
+            apis.addProccessorCreator(
+                'ArgCheck',
+                (description, option) => args => {
                     return true;
                 }
-            });
+            );
         }).to.throw('processorCreators exists');
     });
 });
