@@ -987,18 +987,15 @@
         /**
          * 开发者补充processorsCreators的自定义集(TIPS:不能刷掉内置的proccessorCreators)
          *
-         * @param {Object} processorsCreatorsFragment 开发者需要新增的processorCreators的集合
+         * @param {string} name 注册的processorCreator名称
+         * @param {Function} 需要注册的processorCreator，此函数返回值需要是一个函数
          * @return {APIContainerInner}
          */
-        APIContainerInner.prototype.addProccessorCreator = function (processorCreatorsFragment) {
-            for (var key in processorCreatorsFragment) {
-                if (processorCreatorsFragment.hasOwnProperty(key)) {
-                    if (processorCreators[key]) {
-                        throw new Error('[jsNative] processorCreators exists: ' + key);
-                    }
-                    processorCreators[key] = processorCreatorsFragment[key];
-                }
+        APIContainerInner.prototype.addProccessorCreator = function (name, processorCreator) {
+            if (processorCreators[name]) {
+                throw new Error('[jsNative] processorCreators exists: ' + name);
             }
+            processorCreators[name] = processorCreator;
             return this;
         };
 
