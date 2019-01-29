@@ -791,7 +791,7 @@
              * @param {Object} options 参数对象
              * @param {string=} options.errorTitle 显示报错信息的标题
              * @param {string=} options.namingConflict 名字冲突时的处理策略
-             * @return {APIContainerInner}
+             * @return {APIContainer}
              */
             config: function (options) {
                 options = options || {};
@@ -806,7 +806,7 @@
              * 添加调用API
              *
              * @param {Object|Array} description 调用描述对象
-             * @return {APIContainerInner}
+             * @return {APIContainer}
              */
             add: function (description) {
                 if (description instanceof Array) {
@@ -846,7 +846,7 @@
              * 从一次 Native 的调用结果中添加调用API
              *
              * @param {Object} description 调用描述对象
-             * @return {APIContainerInner}
+             * @return {APIContainer}
              */
             fromNative: function (description) {
                 return this.add(invokeDescription(normalizeDescription(description), null, this));
@@ -906,11 +906,11 @@
              *
              * @param {string} name 注册的processorCreator名称
              * @param {Function} 需要注册的processorCreator，此函数返回值需要是一个函数
-             * @return {APIContainerInner}
+             * @return {APIContainer}
              */
             addProccessorCreator: function (name, processorCreator) {
                 if (processorCreators[name]) {
-                    throw new Error('[jsNative] processorCreators exists: ' + name);
+                    throw new Error('[' + this.options.errorTitle + '] processorCreators exists: ' + name);
                 }
                 processorCreators[name] = processorCreator;
                 return this;
