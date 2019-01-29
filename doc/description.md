@@ -19,7 +19,7 @@
 
 - method
 - handler
-- schema
+- scheme
 - authority
 - path
 
@@ -40,44 +40,44 @@
 
 
 
-[name](#name)  
-[args](#args)  
-[invoke](#invoke)  
-　　[过程处理器](#过程处理器)  
-　　　　[ArgCheck](#argcheck)  
-　　　　[ArgFuncArgDecode](#argfuncargdecode)  
-　　　　[ArgFuncEncode](#argfuncencode)  
-　　　　[ArgEncode](#argencode)  
-　　　　[ArgAdd](#argadd)  
-　　　　[ArgCombine](#argcombine)  
-　　　　[CallMethod](#callMethod)  
-　　　　[CallPrompt](#callprompt)  
-　　　　[CallIframe](#calliframe)  
-　　　　[CallLocation](#calllocation)  
-　　　　[CallMessage](#callmessage)  
-　　　　[ReturnDecode](#returndecode)  
-　　[调用阶段](#调用阶段)  
-　　　　[check](#check)  
-　　　　[before](#before)  
-　　　　[call](#call)  
-　　　　[after](#after)  
-[值类型系统](#值类型系统)  
-　　[类型定义](#类型定义)  
-　　[值类型声明](#值类型声明)  
-　　　　[type](#type)  
-　　　　[oneOf](#oneof)  
-　　　　[oneOfType](#oneoftype)  
-　　　　[arrayOf](#arrayof)  
-　　　　[isRequired](#isrequired)  
-　　[值类型快捷声明](#值类型快捷声明)  
-[经典调用场景](#经典调用场景)  
-　　[method](#method)  
-　　[method.json](#methodjson)  
-　　[prompt.json](#promptjson)  
-　　[prompt.url](#prompturl)  
-　　[location](#location)  
-　　[iframe](#iframe)  
-　　[message](#message)  
+[name](#name)
+[args](#args)
+[invoke](#invoke)
+　　[过程处理器](#过程处理器)
+　　　　[ArgCheck](#argcheck)
+　　　　[ArgFuncArgDecode](#argfuncargdecode)
+　　　　[ArgFuncEncode](#argfuncencode)
+　　　　[ArgEncode](#argencode)
+　　　　[ArgAdd](#argadd)
+　　　　[ArgCombine](#argcombine)
+　　　　[CallMethod](#callMethod)
+　　　　[CallPrompt](#callprompt)
+　　　　[CallIframe](#calliframe)
+　　　　[CallLocation](#calllocation)
+　　　　[CallMessage](#callmessage)
+　　　　[ReturnDecode](#returndecode)
+　　[调用阶段](#调用阶段)
+　　　　[check](#check)
+　　　　[before](#before)
+　　　　[call](#call)
+　　　　[after](#after)
+[值类型系统](#值类型系统)
+　　[类型定义](#类型定义)
+　　[值类型声明](#值类型声明)
+　　　　[type](#type)
+　　　　[oneOf](#oneof)
+　　　　[oneOfType](#oneoftype)
+　　　　[arrayOf](#arrayof)
+　　　　[isRequired](#isrequired)
+　　[值类型快捷声明](#值类型快捷声明)
+[经典调用场景](#经典调用场景)
+　　[method](#method)
+　　[method.json](#methodjson)
+　　[prompt.json](#promptjson)
+　　[prompt.url](#prompturl)
+　　[location](#location)
+　　[iframe](#iframe)
+　　[message](#message)
 
 
 name
@@ -237,7 +237,7 @@ processor-name[:arg]
 
 `参数`：代表合并方式。值为 JSONString | Object | URL
 
-当参数的值为  **URL** 时，该处理器会使用描述对象的 `schema`、`authority`、`path` 字段生成完整的 URL。
+当参数的值为  **URL** 时，该处理器会使用描述对象的 `scheme`、`authority`、`path` 字段生成完整的 URL。
 
 
 #### CallMethod
@@ -454,7 +454,7 @@ string|number
 // 等同于
 
 {
-    
+
     "oneOfType": [
         "string",
         "number"
@@ -469,7 +469,7 @@ string[]
 // 等同于
 
 {
-    
+
     "arrayOf": "string",
     "isRequired": true
 }
@@ -698,7 +698,7 @@ prompt 调用场景的特点是：
         "ReturnDecode:JSON"
     ],
     "name": "request",
-    "schema": "nothttp",
+    "scheme": "nothttp",
     "authority": "net",
     "path": "/request",
     "args": [
@@ -716,7 +716,7 @@ prompt 调用场景的特点是：
 {
     "invoke": "prompt.url",
     "name": "request",
-    "schema": "nothttp",
+    "scheme": "nothttp",
     "authority": "net",
     "path": "/request",
     "args": [
@@ -739,7 +739,7 @@ prompt 调用场景的特点是：
         "after": "JSON"
     },
     "name": "request",
-    "schema": "nothttp",
+    "scheme": "nothttp",
     "authority": "net",
     "path": "/request",
     "args": [
@@ -771,7 +771,7 @@ location 调用场景的特点是：
         "CallLocation"
     ],
     "name": "request",
-    "schema": "nothttp",
+    "scheme": "nothttp",
     "authority": "net",
     "path": "/request",
     "args": [
@@ -788,7 +788,7 @@ location 调用场景的特点是：
 {
     "invoke": "location",
     "name": "request",
-    "schema": "nothttp",
+    "scheme": "nothttp",
     "authority": "net",
     "path": "/request",
     "args": [
@@ -810,7 +810,7 @@ location 调用场景的特点是：
         "before": "URL"
     },
     "name": "request",
-    "schema": "nothttp",
+    "scheme": "nothttp",
     "authority": "net",
     "path": "/request",
     "args": [
@@ -843,7 +843,7 @@ iframe 调用场景的特点和 location 一样：
         "CallIframe"
     ],
     "name": "request",
-    "schema": "nothttp",
+    "scheme": "nothttp",
     "authority": "net",
     "path": "/request",
     "args": [
@@ -860,7 +860,7 @@ iframe 调用场景的特点和 location 一样：
 {
     "invoke": "iframe",
     "name": "request",
-    "schema": "nothttp",
+    "scheme": "nothttp",
     "authority": "net",
     "path": "/request",
     "args": [
@@ -882,7 +882,7 @@ iframe 调用场景的特点和 location 一样：
         "before": "URL"
     },
     "name": "request",
-    "schema": "nothttp",
+    "scheme": "nothttp",
     "authority": "net",
     "path": "/request",
     "args": [
