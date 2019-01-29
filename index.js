@@ -849,7 +849,7 @@
              * @return {APIContainer}
              */
             fromNative: function (description) {
-                return this.add(invokeDescription(normalizeDescription(description), null, this));
+                return this.add(invokeDescription(normalizeDescription(description)));
             },
 
 
@@ -861,7 +861,7 @@
              * @return {*}
              */
             invoke: function (name, args) {
-                return invokeDescription(this.apis[this.apiIndex[name]], args, this);
+                return invokeDescription(this.apis[this.apiIndex[name]], args);
             },
 
             /**
@@ -898,7 +898,7 @@
              * @return {*}
              */
             invokeAPI: function (description, args) {
-                return invokeDescription(normalizeDescription(description), args, this);
+                return invokeDescription(normalizeDescription(description), args);
             },
 
             /**
