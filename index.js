@@ -523,7 +523,7 @@
             args: (description.args || []).slice(0),
             invoke: normalizeInvoke(description.invoke),
             method: description.method,
-            schema: description.schema,
+            scheme: description.scheme,
             authority: description.authority,
             path: description.path,
             handler: description.handler
@@ -657,7 +657,7 @@
             ArgCombine: function (description, option) {
                 switch (option) {
                     case 'URL':
-                        var prefix = description.schema + '://' + description.authority + description.path;
+                        var prefix = description.scheme + '://' + description.authority + description.path;
                         return function (args) {
                             var result = [];
 
