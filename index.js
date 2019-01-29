@@ -523,7 +523,7 @@
             args: (description.args || []).slice(0),
             invoke: normalizeInvoke(description.invoke),
             method: description.method,
-            scheme: description.scheme,
+            scheme: description.scheme || description.schema,
             authority: description.authority,
             path: description.path,
             handler: description.handler
