@@ -510,7 +510,65 @@
         ]
     };
 
-    function APIContainer() {
+    /**
+         * 对调用描述对象进行标准化处理
+         *
+         * @inner
+         * @param {Object} description 调用描述对象
+         * @return {Object}
+         */
+    function normalizeDescription(description) {
+        return {
+            name: description.name,
+            args: (description.args || []).slice(0),
+            invoke: normalizeInvoke(description.invoke),
+            method: description.method,
+            schema: description.schema,
+            authority: description.authority,
+            path: description.path,
+            handler: description.handler
+        };
+    }
+
+    /**
+     * 对 description 中的 invoke 属性进行标准化处理
+     *
+     * @inner
+     * @param {Array|Object|string} invoke description的invoke属性
+     * @return {Array?}
+     */
+    function normalizeInvoke(invoke) {
+        if (invoke instanceof Array) {
+            return invoke;
+        }
+
+        switch (typeof invoke) {
+            case 'string':
+                return INVOKE_SHORTCUT[invoke];
+
+            case 'object':
+                var result = [];
+
+                if (invoke.check) {
+                    result.push('ArgCheck');
+                }
+
+                if (invoke.before) {
+                    result = result.concat(INVOKE_BEFORE_MAP[invoke.before]);
+                }
+
+                result.push(INVOKE_CALL_MAP[invoke.call]);
+
+                if (invoke.after === 'JSON') {
+                    result.push('ReturnDecode:JSON');
+                }
+
+                return result;
+
+        }
+    }
+
+    function APIContainer(options) {
         /**
          * processor 创建方法集合
          *
@@ -718,15 +776,158 @@
             }
         };
 
+        var apiContainer = {
+            options: {
+                errorTitle: 'jsNative'
+            },
+
+            apis: [],
+            apisLen: 0,
+            apiIndex: {},
+
+            /**
+             * 配置参数，设置的参数将被合并到现有参数中
+             *
+             * @param {Object} options 参数对象
+             * @param {string=} options.errorTitle 显示报错信息的标题
+             * @param {string=} options.namingConflict 名字冲突时的处理策略
+             * @return {APIContainerInner}
+             */
+            config: function (options) {
+                options = options || {};
+                // 再多就不能这么干了
+                this.options.errorTitle = options.errorTitle || this.options.errorTitle;
+                this.options.namingConflict = options.namingConflict || this.options.namingConflict;
+
+                return this;
+            },
+
+            /**
+             * 添加调用API
+             *
+             * @param {Object|Array} description 调用描述对象
+             * @return {APIContainerInner}
+             */
+            add: function (description) {
+                if (description instanceof Array) {
+                    for (var i = 0; i < description.length; i++) {
+                        this.add(description[i]);
+                    }
+                }
+                else if (typeof description === 'object') {
+                    var name = description.name;
+
+                    if (this.apiIndex[name] != null) {
+                        switch (this.options.namingConflict) {
+                            /* jshint ignore:start */
+                            case 'override':
+                                this.apis[this.apiIndex[name]] = normalizeDescription(description);
+
+                            case 'ignore':
+                                break;
+                            /* jshint ignore:end */
+
+                            default:
+                                throw new Error('[' + this.options.errorTitle + '] API exists: ' + name);
+                        }
+                    }
+                    else {
+                        var realDesc = normalizeDescription(description);
+
+                        this.apiIndex[name] = this.apisLen;
+                        this.apis[this.apisLen++] = realDesc;
+                    }
+                }
+
+                return this;
+            },
+
+            /**
+             * 从一次 Native 的调用结果中添加调用API
+             *
+             * @param {Object} description 调用描述对象
+             * @return {APIContainerInner}
+             */
+            fromNative: function (description) {
+                return this.add(invokeDescription(normalizeDescription(description), null, this));
+            },
+
+
+            /**
+             * 通过描述对象的 name 属性进行调用
+             *
+             * @param {string} name 调用描述对象名
+             * @param {Array} args 调用参数
+             * @return {*}
+             */
+            invoke: function (name, args) {
+                return invokeDescription(this.apis[this.apiIndex[name]], args, this);
+            },
+
+            /**
+             * 生成一个对象，其上的方法是 API 容器对象中调用描述对象编译成的，可被直接调用的函数
+             *
+             * @param {Object|Function} mapAPI 调用描述对象名称的映射表或映射函数
+             * @return {Object}
+             */
+            map: function (mapAPI) {
+                mapAPI = mapAPI || function (name) {
+                    return name;
+                };
+
+                var apiObject = {};
+
+
+                for (var i = 0; i < this.apis.length; i++) {
+                    var api = this.apis[i];
+                    var apiName = mapAPIName(mapAPI, api.name);
+
+                    if (apiName && api.invoke) {
+                        apiObject[apiName] = buildAPIMethod(api, this);
+                    }
+                }
+
+                return apiObject;
+            },
+
+            /**
+             * 通过调用描述对象进行调用
+             *
+             * @param {Object} description 调用描述对象
+             * @param {Array} args 调用参数
+             * @return {*}
+             */
+            invokeAPI: function (description, args) {
+                return invokeDescription(normalizeDescription(description), args, this);
+            },
+
+            /**
+             * 开发者补充processorsCreators的自定义集(TIPS:不能刷掉内置的proccessorCreators)
+             *
+             * @param {string} name 注册的processorCreator名称
+             * @param {Function} 需要注册的processorCreator，此函数返回值需要是一个函数
+             * @return {APIContainerInner}
+             */
+            addProccessorCreator: function (name, processorCreator) {
+                if (processorCreators[name]) {
+                    throw new Error('[jsNative] processorCreators exists: ' + name);
+                }
+                processorCreators[name] = processorCreator;
+                return this;
+            }
+        };
+
+        apiContainer.config(options);
+        return apiContainer;
+
         /**
          * 生成调用过程处理函数的列表
          *
          * @inner
          * @param {Object} description 调用描述对象
-         * @param {Object} apiContainer description所属的api容器对象
          * @return {Function[]}
          */
-        function getProcessors(description, apiContainer) {
+        function getProcessors(description) {
             var processors = [];
 
             if (!description.invoke) {
@@ -759,146 +960,15 @@
          * @param {Array} args 调用参数
          * @return {*} 处理完成结果
          */
-        function invokeDescription(description, args, apiContainer) {
+        function invokeDescription(description, args) {
             if (description) {
                 args = args || [];
 
-                each(getProcessors(description, apiContainer), function (processor) {
+                each(getProcessors(description), function (processor) {
                     args = processor(args);
                 });
 
                 return args;
-            }
-        }
-
-        /**
-         * 调用 API 容器类
-         *
-         * @class
-         */
-        function APIContainerInner(options) {
-            this.options = {
-                errorTitle: 'jsNative'
-            };
-            this.config(options);
-
-            this.apis = [];
-            this.apisLen = 0;
-            this.apiIndex = {};
-        }
-
-        /**
-         * 配置参数，设置的参数将被合并到现有参数中
-         *
-         * @param {Object} options 参数对象
-         * @param {string=} options.errorTitle 显示报错信息的标题
-         * @param {string=} options.namingConflict 名字冲突时的处理策略
-         * @return {APIContainerInner}
-         */
-        APIContainerInner.prototype.config = function (options) {
-            options = options || {};
-            // 再多就不能这么干了
-            this.options.errorTitle = options.errorTitle || this.options.errorTitle;
-            this.options.namingConflict = options.namingConflict || this.options.namingConflict;
-
-            return this;
-        };
-
-        /**
-         * 添加调用API
-         *
-         * @param {Object|Array} description 调用描述对象
-         * @return {APIContainerInner}
-         */
-        APIContainerInner.prototype.add = function (description) {
-            if (description instanceof Array) {
-                for (var i = 0; i < description.length; i++) {
-                    this.add(description[i]);
-                }
-            }
-            else if (typeof description === 'object') {
-                var name = description.name;
-
-                if (this.apiIndex[name] != null) {
-                    switch (this.options.namingConflict) {
-                        /* jshint ignore:start */
-                        case 'override':
-                            this.apis[this.apiIndex[name]] = normalizeDescription(description);
-
-                        case 'ignore':
-                            break;
-                        /* jshint ignore:end */
-
-                        default:
-                            throw new Error('[' + this.options.errorTitle + '] API exists: ' + name);
-                    }
-                }
-                else {
-                    var realDesc = normalizeDescription(description);
-
-                    this.apiIndex[name] = this.apisLen;
-                    this.apis[this.apisLen++] = realDesc;
-                }
-            }
-
-            return this;
-        };
-
-        /**
-         * 对调用描述对象进行标准化处理
-         *
-         * @inner
-         * @param {Object} description 调用描述对象
-         * @return {Object}
-         */
-        function normalizeDescription(description) {
-            return {
-                name: description.name,
-                args: (description.args || []).slice(0),
-                invoke: normalizeInvoke(description.invoke),
-                method: description.method,
-                schema: description.schema,
-                authority: description.authority,
-                path: description.path,
-                handler: description.handler
-            };
-        }
-
-        /**
-         * 对 description 中的 invoke 属性进行标准化处理
-         *
-         * @inner
-         * @param {Array|Object|string} invoke description的invoke属性
-         * @return {Array?}
-         */
-        function normalizeInvoke(invoke) {
-            if (invoke instanceof Array) {
-                return invoke;
-            }
-
-            switch (typeof invoke) {
-                case 'string':
-                    return INVOKE_SHORTCUT[invoke];
-
-                case 'object':
-                    var result = [];
-
-                    if (invoke.check) {
-                        result.push('ArgCheck');
-                    }
-
-                    if (invoke.before) {
-                        result = result.concat(INVOKE_BEFORE_MAP[invoke.before]);
-                    }
-
-                    result.push(INVOKE_CALL_MAP[invoke.call]);
-
-                    if (invoke.after === 'JSON') {
-                        result.push('ReturnDecode:JSON');
-                    }
-
-                    return result;
-
             }
         }
 
@@ -909,8 +979,8 @@
          * @param {Object} description 调用描述对象
          * @return {Function}
          */
-        function buildAPIMethod(description, apiContainer) {
-            var processors = getProcessors(description, apiContainer);
+        function buildAPIMethod(description) {
+            var processors = getProcessors(description);
 
             function process(args) {
                 each(processors, function (processor) {
@@ -924,82 +994,6 @@
                 return process(Array.prototype.slice.call(arguments, 0, description.args.length));
             };
         }
-
-        /**
-         * 从一次 Native 的调用结果中添加调用API
-         *
-         * @param {Object} description 调用描述对象
-         * @return {APIContainerInner}
-         */
-        APIContainerInner.prototype.fromNative = function (description) {
-            return this.add(invokeDescription(normalizeDescription(description), null, this));
-        };
-
-
-        /**
-         * 通过描述对象的 name 属性进行调用
-         *
-         * @param {string} name 调用描述对象名
-         * @param {Array} args 调用参数
-         * @return {*}
-         */
-        APIContainerInner.prototype.invoke = function (name, args) {
-            return invokeDescription(this.apis[this.apiIndex[name]], args, this);
-        };
-
-        /**
-         * 生成一个对象，其上的方法是 API 容器对象中调用描述对象编译成的，可被直接调用的函数
-         *
-         * @param {Object|Function} mapAPI 调用描述对象名称的映射表或映射函数
-         * @return {Object}
-         */
-        APIContainerInner.prototype.map = function (mapAPI) {
-            mapAPI = mapAPI || function (name) {
-                return name;
-            };
-
-            var apiObject = {};
-
-
-            for (var i = 0; i < this.apis.length; i++) {
-                var api = this.apis[i];
-                var apiName = mapAPIName(mapAPI, api.name);
-
-                if (apiName && api.invoke) {
-                    apiObject[apiName] = buildAPIMethod(api, this);
-                }
-            }
-
-            return apiObject;
-        };
-
-        /**
-         * 通过调用描述对象进行调用
-         *
-         * @param {Object} description 调用描述对象
-         * @param {Array} args 调用参数
-         * @return {*}
-         */
-        APIContainerInner.prototype.invokeAPI = function (description, args) {
-            return invokeDescription(normalizeDescription(description), args, this);
-        };
-
-        /**
-         * 开发者补充processorsCreators的自定义集(TIPS:不能刷掉内置的proccessorCreators)
-         *
-         * @param {string} name 注册的processorCreator名称
-         * @param {Function} 需要注册的processorCreator，此函数返回值需要是一个函数
-         * @return {APIContainerInner}
-         */
-        APIContainerInner.prototype.addProccessorCreator = function (name, processorCreator) {
-            if (processorCreators[name]) {
-                throw new Error('[jsNative] processorCreators exists: ' + name);
-            }
-            processorCreators[name] = processorCreator;
-            return this;
-        };
-
-        return new APIContainerInner();
     }
 
     // export object ===========
