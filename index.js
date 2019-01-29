@@ -511,12 +511,12 @@
     };
 
     /**
-         * 对调用描述对象进行标准化处理
-         *
-         * @inner
-         * @param {Object} description 调用描述对象
-         * @return {Object}
-         */
+     * 对调用描述对象进行标准化处理
+     *
+     * @inner
+     * @param {Object} description 调用描述对象
+     * @return {Object}
+     */
     function normalizeDescription(description) {
         return {
             name: description.name,
