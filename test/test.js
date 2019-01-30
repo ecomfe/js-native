@@ -363,11 +363,11 @@ describe('APIContainer', () => {
         expect(apis.invoke('api12', [2, 1])).to.be.equal(1);
     });
 
-    it('addProccessorCreator', () => {
+    it('addProcessorCreator', () => {
         tAPI.api13 = (a, b) => {
             return a + b;
         };
-        apis.addProccessorCreator(
+        apis.addProcessorCreator(
             'CallTestMessage',
             (description, option) => args => {
                 return true;
@@ -387,9 +387,9 @@ describe('APIContainer', () => {
         expect(apis.invoke('api13', [2, 1])).to.be.equal(true);
     });
 
-    it('addProccessorCreator error', () => {
+    it('addProcessorCreator error', () => {
         expect(() => {
-            apis.addProccessorCreator(
+            apis.addProcessorCreator(
                 'ArgCheck',
                 (description, option) => args => {
                     return true;

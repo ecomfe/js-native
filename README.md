@@ -244,6 +244,42 @@ apiContainer.add({
 });
 ```
 
+#### addProcessorCreator
+
+`说明`
+
+新增 processorCreator ，新增的 processorCreator 可以在描述的 invoke 中进行调用(但不可以冲掉内置的 processorCreator )
+
+`参数`
+
+- `{string}` name 注册的 processorCreator 名称
+- `{Function}` processorCreator 的创建函数，需要返回真正的processor
+
+其中 processorCreator 接受三个参数：
+
+- description: 当前调用能力的description
+- option: 调用能力时，invoke配置的参数（如：ReturnDecode:JSON 中的JSON）
+- apiContainer: 调用能力发生的container对象
+
+processorCreator 的返回值接受调用能力时真正传入的参数
+
+`返回`
+
+`{APIContainer}` this
+
+`示例`
+
+```js
+apis.addProccessorCreator(
+    'ArgAddToken',
+    function (description, option, apiContainer) {
+        return function (args) {
+            return true;
+        }
+    }
+);
+```
+
 #### config
 
 `说明`
