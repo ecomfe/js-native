@@ -902,13 +902,13 @@
             },
 
             /**
-             * 开发者补充processorsCreators的自定义集(TIPS:不能刷掉内置的proccessorCreators)
+             * 开发者补充processorsCreators的自定义集(TIPS:不能刷掉内置的processorCreators)
              *
              * @param {string} name 注册的processorCreator名称
              * @param {Function} 需要注册的processorCreator，此函数返回值需要是一个函数
              * @return {APIContainer}
              */
-            addProccessorCreator: function (name, processorCreator) {
+            addProcessorCreator: function (name, processorCreator) {
                 if (processorCreators[name]) {
                     throw new Error('[' + this.options.errorTitle + '] processorCreators exists: ' + name);
                 }
