@@ -22,7 +22,7 @@ jsNative 是一个 JavaScript 与 Native 通信管理的库。其基于 [通信�
 `NPM:`
 
 ```
-$ npm i js-native --save 
+$ npm i js-native --save
 ```
 
 `保存:`
@@ -270,7 +270,7 @@ processorCreator 的返回值接受调用能力时真正传入的参数
 `示例`
 
 ```js
-apis.addProccessorCreator(
+apis.addProcessorCreator(
     'ArgAddToken',
     function (description, option, apiContainer) {
         return function (args) {
