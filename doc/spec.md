@@ -10,7 +10,7 @@
 
 #### 【强制】 接口描述信息必须包含 `name` 属性做为标识
 
-`name` 标识主要作用是声明接口在当前环境的唯一性。在 prmopt、postMessage 等调用场景下，可能需要回传到 Native 进行路由。
+`name` 标识主要作用是声明接口在当前环境的唯一性。在 prompt、postMessage 等调用场景下，可能需要回传到 Native 进行路由。
 
 
 #### 【建议】 接口描述信息的 `name` 属性采用 `.` 分隔的 namespace 格式
