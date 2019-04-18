@@ -246,7 +246,7 @@
      */
     function wrapDecodeFuncArg(fn) {
         return function (arg) {
-            fn(JSON.parse(arg));
+            fn(typeof arg === 'string' ? JSON.parse(arg) : arg);
         };
     }
 
