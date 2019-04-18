@@ -63,3 +63,4 @@ typings/
 /cjs
 .DS_Store
 /demo/dist
+package-lock.json
