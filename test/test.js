@@ -289,7 +289,7 @@ describe('APIContainer', () => {
             method: "tAPI.nativeAPIs"
         });
 
-        
+
 
         tAPI.api10 = tAPI.api11 = (one, two) => {
             sum = one + two;
@@ -423,7 +423,7 @@ describe('Processor ArgCheck', () => {
         expect(() => {
             apis.invoke('argCheck1', [1, '2', [], function () {}, {}]);
         }).to.not.throw(Error);
-        
+
     });
 
 
@@ -474,7 +474,7 @@ describe('Processor ArgCheck', () => {
         expect(() => {
             apis.invoke('argCheck4', [1, '2', '22', 33, {}]);
         }).to.throw('Array');
-        
+
     });
 
     it('invalid function', () => {
@@ -493,7 +493,7 @@ describe('Processor ArgCheck', () => {
         expect(() => {
             apis.invoke('argCheck5', [1, '2', ['22'], 33]);
         }).to.throw('function');
-        
+
     });
 
     it('invalid object', () => {
@@ -512,7 +512,7 @@ describe('Processor ArgCheck', () => {
         expect(() => {
             apis.invoke('argCheck6', [1, '2', ['22'], () => {}, 3]);
         }).to.throw(/object/i);
-        
+
     });
 
     it('invalid required', () => {
@@ -572,7 +572,7 @@ describe('Processor ArgCheck', () => {
             name: "argCheck10",
             args: [
                 {
-                    name: 'one', 
+                    name: 'one',
                     value: {
                         oneOf: [1, 2, 10]
                     }
@@ -595,7 +595,7 @@ describe('Processor ArgCheck', () => {
             name: "argCheck11",
             args: [
                 {
-                    name: 'one', 
+                    name: 'one',
                     value: {
                         oneOf: [1, 2, 10]
                     }
@@ -640,7 +640,7 @@ describe('Processor ArgCheck', () => {
             name: "argCheck13",
             args: [
                 {
-                    name: 'one', 
+                    name: 'one',
                     value: {
                         arrayOf: 'string'
                     }
@@ -667,7 +667,7 @@ describe('Processor ArgCheck', () => {
             name: "argCheck14",
             args: [
                 {
-                    name: 'one', 
+                    name: 'one',
                     value: 'string[]'
                 }
             ]
@@ -694,7 +694,7 @@ describe('Processor ArgCheck', () => {
             name: "argCheck15",
             args: [
                 {
-                    name: 'one', 
+                    name: 'one',
                     value: {
                         type: {
                             name: 'string',
@@ -756,7 +756,7 @@ describe('Processor ArgCheck', () => {
             name: "argCheck16",
             args: [
                 {
-                    name: 'one', 
+                    name: 'one',
                     value: {
                         arrayOf: {
                             type: {
@@ -780,14 +780,14 @@ describe('Processor ArgCheck', () => {
 
         expect(() => {
             apis.invoke('argCheck16', [[
-                {country: 'china', city: 'beijing'}, 
+                {country: 'china', city: 'beijing'},
                 {country: 'china', city: 'haikou'}
             ]]);
         }).to.not.throw(Error);
 
         expect(() => {
             apis.invoke('argCheck16', [[
-                {country: 'china', city: 'beijing'}, 
+                {country: 'china', city: 'beijing'},
                 {country: 'china'}
             ]]);
         }).to.throw('arrayOf');
@@ -799,7 +799,7 @@ describe('Processor ArgCheck', () => {
             name: "argCheck17",
             args: [
                 {
-                    name: 'one', 
+                    name: 'one',
                     value: {
                         arrayOf: {
                             oneOf: [1, 'one', '1']
@@ -832,11 +832,11 @@ describe('Processor ArgCheck', () => {
             name: "argCheck18",
             args: [
                 {
-                    name: 'dep', 
+                    name: 'dep',
                     value: 'string'
                 },
                 {
-                    name: 'leader', 
+                    name: 'leader',
                     value: {
                         type: {
                             name: 'string',
@@ -1020,6 +1020,31 @@ describe('Processor ArgFuncArgDecode', () => {
         }]);
     });
 
+    it('ignore when not string is meeted ', () => {
+        apis.add({
+            invoke: ['ArgFuncArgDecode:JSON', "CallMethod"],
+            name: "api4",
+            method: "tp1API.api4",
+            args: [
+                { name: 'one', type: 'number' },
+                { name: 'two', type: 'function' }
+            ]
+        });
+        tp1API.api4 = (one, two) => {
+            expect(one).to.be.a('number');
+            expect(two).to.be.a('function');
+
+            two([1, [2, 3], '3', true]);
+        };
+
+        apis.invoke('api3', [1, function (arr) {
+            expect(arr).to.be.a('Array');
+            expect(arr[0]).to.be.equal(1);
+            expect(arr[1]).to.be.an('Array');
+            expect(arr[2]).to.be.a('string');
+            expect(arr[3]).to.be.equal(true);
+        }]);
+    });
 });
 
 describe('Processor ArgFuncEncode', () => {
@@ -1176,7 +1201,7 @@ describe('Processor ArgEncode', () => {
             function (two) {
                 expect(two).to.be.a('number');
                 expect(two).to.be.equal(2);
-            } 
+            }
         ]);
     });
 
@@ -1293,7 +1318,7 @@ describe('Processor ArgCombine', () => {
                 {name: 'one', value: 'string'},
                 {name: 'two', value: 'string'}
             ]
-            
+
         });
 
         let result = apis.invoke('api4', [
@@ -1325,7 +1350,7 @@ describe('Processor ArgCombine', () => {
                 {name: 'method', value: 'string'},
                 {name: 'onsuccess', value: 'function'}
             ]
-            
+
         });
 
         let result = apis.invoke('api5', [
@@ -1547,7 +1572,7 @@ function decodeURL(source, decodeJSON) {
 
         queryStr.split('&').forEach(item => {
             let pair = item.split('=');
-            url.query[pair[0]] = decodeJSON 
+            url.query[pair[0]] = decodeJSON
                 ? JSON.parse(decodeURIComponent(pair[1]))
                 : decodeURIComponent(pair[1]);
         });
@@ -1604,8 +1629,8 @@ describe('Processor CallPrompt', () => {
 
             return JSON.stringify({
                 one: 'hello',
-                two: 2, 
-                three: true, 
+                two: 2,
+                three: true,
                 four: {name: 'hello'}
             });
         });
@@ -1634,8 +1659,8 @@ describe('Processor CallPrompt', () => {
 
             return JSON.stringify({
                 one: 'hello',
-                two: 2, 
-                three: true, 
+                two: 2,
+                three: true,
                 four: {name: 'hello'}
             });
         });
@@ -1702,8 +1727,8 @@ describe('Processor CallLocation', () => {
 
             return JSON.stringify({
                 one: 'hello',
-                two: 2, 
-                three: true, 
+                two: 2,
+                three: true,
                 four: {name: 'hello'}
             });
         });
@@ -1733,8 +1758,8 @@ describe('Processor CallLocation', () => {
                 () => {
                     global[url.query.onsuccess](JSON.stringify({
                         one: 'hello',
-                        two: 2, 
-                        three: true, 
+                        two: 2,
+                        three: true,
                         four: {name: 'hello'}
                     }));
 
@@ -1767,8 +1792,8 @@ describe('Processor CallLocation', () => {
         });
 
         let resultStr = apis.invoke('api2', [
-            'http://www.baidu.com/', 
-            'get', 
+            'http://www.baidu.com/',
+            'get',
             result => {
                 expect(result).to.be.a('object');
                 expect(result.one).to.be.equal('hello');
@@ -1828,8 +1853,8 @@ describe('Processor CallIframe', () => {
 
             return JSON.stringify({
                 one: 'hello',
-                two: 2, 
-                three: true, 
+                two: 2,
+                three: true,
                 four: {name: 'hello'}
             });
         });
@@ -1859,8 +1884,8 @@ describe('Processor CallIframe', () => {
                 () => {
                     global[url.query.onsuccess](JSON.stringify({
                         one: 'hello',
-                        two: 2, 
-                        three: true, 
+                        two: 2,
+                        three: true,
                         four: {name: 'hello'}
                     }));
 
@@ -1893,8 +1918,8 @@ describe('Processor CallIframe', () => {
         });
 
         let resultStr = apis.invoke('api2', [
-            'http://www.baidu.com/', 
-            'get', 
+            'http://www.baidu.com/',
+            'get',
             result => {
                 expect(result).to.be.a('object');
                 expect(result.one).to.be.equal('hello');
@@ -1940,8 +1965,8 @@ describe('Processor CallMessage', () => {
 
             return JSON.stringify({
                 one: 'hello',
-                two: 2, 
-                three: true, 
+                two: 2,
+                three: true,
                 four: {name: 'hello'}
             });
         });
@@ -1972,8 +1997,8 @@ describe('Processor CallMessage', () => {
                 () => {
                     global[data.onsuccess](JSON.stringify({
                         one: 'hello',
-                        two: 2, 
-                        three: true, 
+                        two: 2,
+                        three: true,
                         four: {name: 'hello'}
                     }));
 
@@ -2004,8 +2029,8 @@ describe('Processor CallMessage', () => {
         });
 
         let resultStr = apis.invoke('api2', [
-            'http://www.baidu.com/', 
-            'get', 
+            'http://www.baidu.com/',
+            'get',
             result => {
                 expect(result).to.be.a('object');
                 expect(result.one).to.be.equal('hello');
@@ -2049,8 +2074,8 @@ describe('Shortcut method', () => {
 
             let data = {
                 one: 'hello',
-                two: 2, 
-                three: true, 
+                two: 2,
+                three: true,
                 four: {name: 'hello'},
                 url: req.url,
                 method: req.method
@@ -2069,10 +2094,10 @@ describe('Shortcut method', () => {
                 expect(obj.four.name).to.be.equal('hello');
             }]);
         }).to.throw('Argument Error');
-        
+
     });
 
-    
+
 
     it('success call, check args、return value and callback', () => {
         apis.add({
@@ -2092,8 +2117,8 @@ describe('Shortcut method', () => {
         sc1API.api2 = (req, onsuccess) => {
             let data = {
                 one: 'hello',
-                two: 2, 
-                three: true, 
+                two: 2,
+                three: true,
                 four: {name: 'hello'},
                 url: req.url,
                 method: req.method
@@ -2104,7 +2129,7 @@ describe('Shortcut method', () => {
         };
 
         let returnValue = apis.invoke('api2', [
-            {url: 'http://www.baidu.com/'}, 
+            {url: 'http://www.baidu.com/'},
             function (obj) {
                 expect(obj).to.be.a('object');
                 expect(obj.one).to.be.equal('hello');
@@ -2116,7 +2141,7 @@ describe('Shortcut method', () => {
                 expect(obj.method).to.be.a('undefined');
             }
         ]);
-        
+
         expect(returnValue).to.be.a('object');
         expect(returnValue.one).to.be.equal('hello');
         expect(returnValue.two).to.be.equal(2);
@@ -2147,8 +2172,8 @@ describe('Shortcut method', () => {
         sc1API.api3 = (req, onsuccess) => {
             let data = {
                 one: 'hello',
-                two: 2, 
-                three: true, 
+                two: 2,
+                three: true,
                 four: {name: 'hello'},
                 url: req.url,
                 method: req.method
@@ -2161,7 +2186,7 @@ describe('Shortcut method', () => {
         let apiObj = apis.map({api3: 'thisTest'});
 
         let returnValue = apiObj.thisTest(
-            {url: 'http://www.baidu.com/'}, 
+            {url: 'http://www.baidu.com/'},
             function (obj) {
                 expect(obj).to.be.a('object');
                 expect(obj.one).to.be.equal('hello');
@@ -2173,7 +2198,7 @@ describe('Shortcut method', () => {
                 expect(obj.method).to.be.a('undefined');
             }
         );
-        
+
         expect(returnValue).to.be.a('object');
         expect(returnValue.one).to.be.equal('hello');
         expect(returnValue.two).to.be.equal(2);
@@ -2189,7 +2214,7 @@ describe('Shortcut method', () => {
 
         let otherApiObj = apis.map();
         let otherReturnValue = otherApiObj.api3(
-            {url: 'http://www.baidu.com/'}, 
+            {url: 'http://www.baidu.com/'},
             function (obj) {
                 expect(obj).to.be.a('object');
                 expect(obj.one).to.be.equal('hello');
@@ -2201,7 +2226,7 @@ describe('Shortcut method', () => {
                 expect(obj.method).to.be.a('undefined');
             }
         );
-        
+
         expect(otherReturnValue).to.be.a('object');
         expect(otherReturnValue.one).to.be.equal('hello');
         expect(otherReturnValue.two).to.be.equal(2);
@@ -2290,8 +2315,8 @@ describe('Shortcut method.json', () => {
 
             let data = JSON.stringify({
                 one: 'hello',
-                two: 2, 
-                three: true, 
+                two: 2,
+                three: true,
                 four: {name: 'hello'},
                 url: req.url,
                 method: req.method
@@ -2302,7 +2327,7 @@ describe('Shortcut method.json', () => {
         };
 
         let returnValue = apis.invoke('api2', [
-            {url: 'http://www.baidu.com/'}, 
+            {url: 'http://www.baidu.com/'},
             function (obj) {
 
                 expect(obj).to.be.a('object');
@@ -2315,7 +2340,7 @@ describe('Shortcut method.json', () => {
                 expect(obj.method).to.be.a('undefined');
             }
         ]);
-        
+
         expect(returnValue).to.be.a('object');
         expect(returnValue.one).to.be.equal('hello');
         expect(returnValue.two).to.be.equal(2);
@@ -2348,8 +2373,8 @@ describe('Shortcut method.json', () => {
 
             let data = JSON.stringify({
                 one: 'hello',
-                two: 2, 
-                three: true, 
+                two: 2,
+                three: true,
                 four: {name: 'hello'},
                 url: req.url,
                 method: req.method
@@ -2362,7 +2387,7 @@ describe('Shortcut method.json', () => {
         let apiObj = apis.map({api3: 'thisTest'});
 
         let returnValue = apiObj.thisTest(
-            {url: 'http://www.baidu.com/'}, 
+            {url: 'http://www.baidu.com/'},
             function (obj) {
                 expect(obj).to.be.a('object');
                 expect(obj.one).to.be.equal('hello');
@@ -2374,7 +2399,7 @@ describe('Shortcut method.json', () => {
                 expect(obj.method).to.be.a('undefined');
             }
         );
-        
+
         expect(returnValue).to.be.a('object');
         expect(returnValue.one).to.be.equal('hello');
         expect(returnValue.two).to.be.equal(2);
@@ -2416,8 +2441,8 @@ describe('Shortcut method.json', () => {
 
             let data = JSON.stringify({
                 one: 'hello',
-                two: 2, 
-                three: true, 
+                two: 2,
+                three: true,
                 four: {name: 'hello'},
                 url: req.url,
                 method: req.method
@@ -2430,7 +2455,7 @@ describe('Shortcut method.json', () => {
         let apiObj = apis.map({api4: 'thisTest'});
 
         let returnValue = apiObj.thisTest(
-            {url: 'http://www.baidu.com/'}, 
+            {url: 'http://www.baidu.com/'},
             function (obj) {
                 expect(obj).to.be.a('object');
                 expect(obj.one).to.be.equal('hello');
@@ -2442,7 +2467,7 @@ describe('Shortcut method.json', () => {
                 expect(obj.method).to.be.a('undefined');
             }
         );
-        
+
         expect(returnValue).to.be.a('object');
         expect(returnValue.one).to.be.equal('hello');
         expect(returnValue.two).to.be.equal(2);
@@ -2484,8 +2509,8 @@ describe('Shortcut prompt.json', () => {
         global.prompt.setCurrent('json', arg => {
             let data = JSON.stringify({
                 one: 'hello',
-                two: 2, 
-                three: true, 
+                two: 2,
+                three: true,
                 four: {name: 'hello'},
                 url: arg.req.url,
                 method: arg.req.method
@@ -2496,10 +2521,10 @@ describe('Shortcut prompt.json', () => {
             global[arg.onsuccess](data);
             return data;
         });
-        
+
 
         let returnValue = apis.invoke('api1', [
-            {url: 'http://www.baidu.com/'}, 
+            {url: 'http://www.baidu.com/'},
             function (obj) {
 
                 expect(obj).to.be.a('object');
@@ -2512,7 +2537,7 @@ describe('Shortcut prompt.json', () => {
                 expect(obj.method).to.be.a('undefined');
             }
         ]);
-        
+
         expect(returnValue).to.be.a('object');
         expect(returnValue.one).to.be.equal('hello');
         expect(returnValue.two).to.be.equal(2);
@@ -2523,7 +2548,7 @@ describe('Shortcut prompt.json', () => {
         expect(returnValue.method).to.be.a('undefined');
     });
 
-    
+
     it('call with map api, check args、return value and callback', () => {
         apis.add({
             invoke: 'prompt.json',
@@ -2542,8 +2567,8 @@ describe('Shortcut prompt.json', () => {
         global.prompt.setCurrent('json', arg => {
             let data = JSON.stringify({
                 one: 'hello',
-                two: 2, 
-                three: true, 
+                two: 2,
+                three: true,
                 four: {name: 'hello'},
                 url: arg.req.url,
                 method: arg.req.method
@@ -2558,7 +2583,7 @@ describe('Shortcut prompt.json', () => {
         let apiObj = apis.map({api2: 'thisTest'});
 
         let returnValue = apiObj.thisTest(
-            {url: 'http://www.baidu.com/'}, 
+            {url: 'http://www.baidu.com/'},
             function (obj) {
                 expect(obj).to.be.a('object');
                 expect(obj.one).to.be.equal('hello');
@@ -2570,7 +2595,7 @@ describe('Shortcut prompt.json', () => {
                 expect(obj.method).to.be.a('undefined');
             }
         );
-        
+
         expect(returnValue).to.be.a('object');
         expect(returnValue.one).to.be.equal('hello');
         expect(returnValue.two).to.be.equal(2);
@@ -2618,8 +2643,8 @@ describe('Shortcut prompt.url', () => {
 
             let data = JSON.stringify({
                 one: 'hello',
-                two: 2, 
-                three: true, 
+                two: 2,
+                three: true,
                 four: {name: 'hello'},
                 url: req.url,
                 method: req.method
@@ -2628,10 +2653,10 @@ describe('Shortcut prompt.url', () => {
             global[JSON.parse(arg.onsuccess)](data);
             return data;
         });
-        
+
 
         let returnValue = apis.invoke('api1', [
-            {url: 'http://www.baidu.com/'}, 
+            {url: 'http://www.baidu.com/'},
             function (obj) {
 
                 expect(obj).to.be.a('object');
@@ -2644,7 +2669,7 @@ describe('Shortcut prompt.url', () => {
                 expect(obj.method).to.be.a('undefined');
             }
         ]);
-        
+
         expect(returnValue).to.be.a('object');
         expect(returnValue.one).to.be.equal('hello');
         expect(returnValue.two).to.be.equal(2);
@@ -2683,8 +2708,8 @@ describe('Shortcut prompt.url', () => {
 
             let data = JSON.stringify({
                 one: 'hello',
-                two: 2, 
-                three: true, 
+                two: 2,
+                three: true,
                 four: {name: 'hello'},
                 url: req.url,
                 method: req.method
@@ -2697,7 +2722,7 @@ describe('Shortcut prompt.url', () => {
         let apiObj = apis.map({api2: 'thisTest'});
 
         let returnValue = apiObj.thisTest(
-            {url: 'http://www.baidu.com/'}, 
+            {url: 'http://www.baidu.com/'},
             function (obj) {
                 expect(obj).to.be.a('object');
                 expect(obj.one).to.be.equal('hello');
@@ -2709,7 +2734,7 @@ describe('Shortcut prompt.url', () => {
                 expect(obj.method).to.be.a('undefined');
             }
         );
-        
+
         expect(returnValue).to.be.a('object');
         expect(returnValue.one).to.be.equal('hello');
         expect(returnValue.two).to.be.equal(2);
@@ -2758,8 +2783,8 @@ describe('Shortcut location', () => {
 
             let data = JSON.stringify({
                 one: 'hello',
-                two: 2, 
-                three: true, 
+                two: 2,
+                three: true,
                 four: {name: 'hello'},
                 url: arg.req.url,
                 method: arg.req.method
@@ -2768,10 +2793,10 @@ describe('Shortcut location', () => {
             global[arg.onsuccess](data);
             return data;
         });
-        
+
 
         let returnValue = apis.invoke('api1', [
-            {url: 'http://www.baidu.com/'}, 
+            {url: 'http://www.baidu.com/'},
             function (obj) {
 
                 expect(obj).to.be.a('object');
@@ -2784,7 +2809,7 @@ describe('Shortcut location', () => {
                 expect(obj.method).to.be.a('undefined');
             }
         ]);
-        
+
         expect(returnValue).to.be.a('undefined');
     });
 
@@ -2815,8 +2840,8 @@ describe('Shortcut location', () => {
 
             let data = JSON.stringify({
                 one: 'hello',
-                two: 2, 
-                three: true, 
+                two: 2,
+                three: true,
                 four: {name: 'hello'},
                 url: arg.req.url,
                 method: arg.req.method
@@ -2836,7 +2861,7 @@ describe('Shortcut location', () => {
         }).to.throw('Argument Error');
 
         let returnValue = apiObj.thisTest(
-            {url: 'http://www.baidu.com/'}, 
+            {url: 'http://www.baidu.com/'},
             function (obj) {
                 expect(obj).to.be.a('object');
                 expect(obj.one).to.be.equal('hello');
@@ -2850,7 +2875,7 @@ describe('Shortcut location', () => {
                 done();
             }
         );
-        
+
         expect(returnValue).to.be.a('undefined');
     });
 
@@ -2888,8 +2913,8 @@ describe('Shortcut iframe', () => {
 
             let data = JSON.stringify({
                 one: 'hello',
-                two: 2, 
-                three: true, 
+                two: 2,
+                three: true,
                 four: {name: 'hello'},
                 url: arg.req.url,
                 method: arg.req.method
@@ -2898,10 +2923,10 @@ describe('Shortcut iframe', () => {
             global[arg.onsuccess](data);
             return data;
         });
-        
+
 
         let returnValue = apis.invoke('api1', [
-            {url: 'http://www.baidu.com/'}, 
+            {url: 'http://www.baidu.com/'},
             function (obj) {
 
                 expect(obj).to.be.a('object');
@@ -2914,7 +2939,7 @@ describe('Shortcut iframe', () => {
                 expect(obj.method).to.be.a('undefined');
             }
         ]);
-        
+
         expect(returnValue).to.be.a('undefined');
     });
 
@@ -2945,8 +2970,8 @@ describe('Shortcut iframe', () => {
 
             let data = JSON.stringify({
                 one: 'hello',
-                two: 2, 
-                three: true, 
+                two: 2,
+                three: true,
                 four: {name: 'hello'},
                 url: arg.req.url,
                 method: arg.req.method
@@ -2966,7 +2991,7 @@ describe('Shortcut iframe', () => {
         }).to.throw('Argument Error');
 
         let returnValue = apiObj.thisTest(
-            {url: 'http://www.baidu.com/'}, 
+            {url: 'http://www.baidu.com/'},
             function (obj) {
                 expect(obj).to.be.a('object');
                 expect(obj.one).to.be.equal('hello');
@@ -2980,7 +3005,7 @@ describe('Shortcut iframe', () => {
                 done();
             }
         );
-        
+
         expect(returnValue).to.be.a('undefined');
     });
 
@@ -3013,8 +3038,8 @@ describe('Shortcut message', () => {
 
             let data = JSON.stringify({
                 one: 'hello',
-                two: 2, 
-                three: true, 
+                two: 2,
+                three: true,
                 four: {name: 'hello'},
                 url: arg.req.url,
                 method: arg.req.method
@@ -3023,10 +3048,10 @@ describe('Shortcut message', () => {
             global[arg.onsuccess](data);
             return data;
         });
-        
+
 
         let returnValue = apis.invoke('api1', [
-            {url: 'http://www.baidu.com/'}, 
+            {url: 'http://www.baidu.com/'},
             function (obj) {
 
                 expect(obj).to.be.a('object');
@@ -3039,7 +3064,7 @@ describe('Shortcut message', () => {
                 expect(obj.method).to.be.a('undefined');
             }
         ]);
-        
+
         expect(returnValue).to.be.a('undefined');
     });
 
@@ -3065,8 +3090,8 @@ describe('Shortcut message', () => {
 
             let data = JSON.stringify({
                 one: 'hello',
-                two: 2, 
-                three: true, 
+                two: 2,
+                three: true,
                 four: {name: 'hello'},
                 url: arg.req.url,
                 method: arg.req.method
@@ -3075,7 +3100,7 @@ describe('Shortcut message', () => {
             setTimeout(() => {
                 global[arg.onsuccess](data);
             }, 10);
-            
+
             return data;
         });
 
@@ -3087,7 +3112,7 @@ describe('Shortcut message', () => {
         }).to.throw('Argument Error');
 
         let returnValue = apiObj.thisTest(
-            {url: 'http://www.baidu.com/'}, 
+            {url: 'http://www.baidu.com/'},
             function (obj) {
                 expect(obj).to.be.a('object');
                 expect(obj.one).to.be.equal('hello');
@@ -3101,7 +3126,7 @@ describe('Shortcut message', () => {
                 done();
             }
         );
-        
+
         expect(returnValue).to.be.a('undefined');
     });
 
