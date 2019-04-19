@@ -734,6 +734,7 @@
                         case 3:
                             return methodOwner[methodName](args[0], args[1], args[2]);
                     }
+
                     return methodOwner[methodName].apply(methodOwner, args);
                 };
             },
