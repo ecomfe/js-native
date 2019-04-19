@@ -34,6 +34,17 @@
         return source;
     }
 
+    /**
+     * 对返回值进行 JSON 解码（反序列化）处理的函数
+     *
+     * @inner
+     * @param {*} source 原值
+     * @return {*}
+     */
+    function returnJSONDecode(source) {
+        return typeof source === 'string' ? JSON.parse(source) : source;
+    }
+
 
     /**
      * 参数检查，错误直接抛出异常
@@ -771,7 +782,7 @@
              */
             ReturnDecode: function (description, option) {
                 return option === 'JSON'
-                    ? JSON.parse
+                    ? returnJSONDecode
                     : returnRaw;
             }
         };
