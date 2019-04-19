@@ -399,7 +399,115 @@ describe('APIContainer', () => {
     });
 });
 
+describe('Processor CallMethod', () => {
+    let cmAPI = {};
+    global.cmAPI = cmAPI;
 
+
+    let apis;
+    before(() => {
+        apis = jsNative.createContainer();
+    });
+
+    it('no arg', () => {
+        let called = 0;
+
+        apis.add({
+            invoke: ["CallMethod"],
+            name: "api0",
+            method: "cmAPI.api0",
+            args: []
+        });
+        cmAPI.api0 = () => {
+            called = 1;
+        };
+
+        apis.invoke('api0', []);
+        expect(called).to.be.equal(1);
+    });
+
+    it('1 arg', () => {
+        let sum = 0;
+
+        apis.add({
+            invoke: ["CallMethod"],
+            name: "api1",
+            method: "cmAPI.api1",
+            args: [
+                { name: 'a', value: 'number' }
+            ]
+        });
+        cmAPI.api1 = (a) => {
+            sum = a;
+        };
+
+        apis.invoke('api1', [5]);
+        expect(sum).to.be.equal(5);
+    });
+
+    it('2 args', () => {
+        let sum = 0;
+
+        apis.add({
+            invoke: ["CallMethod"],
+            name: "api2",
+            method: "cmAPI.api2",
+            args: [
+                { name: 'a', value: 'number' },
+                { name: 'b', value: 'number' }
+            ]
+        });
+        cmAPI.api2 = (a, b) => {
+            sum = a + b;
+        };
+
+        apis.invoke('api2', [5, 2]);
+        expect(sum).to.be.equal(7);
+    });
+
+    it('3 args', () => {
+        let sum = 0;
+
+        apis.add({
+            invoke: ["CallMethod"],
+            name: "api3",
+            method: "cmAPI.api3",
+            args: [
+                { name: 'a', value: 'number' },
+                { name: 'b', value: 'number' },
+                { name: 'c', value: 'number' }
+            ]
+        });
+        cmAPI.api3 = (a, b, c) => {
+            sum = a + b + c;
+        };
+
+        apis.invoke('api3', [5, 2, 1]);
+        expect(sum).to.be.equal(8);
+    });
+
+    it('4 args', () => {
+        let sum = 0;
+
+        apis.add({
+            invoke: ["CallMethod"],
+            name: "api4",
+            method: "cmAPI.api4",
+            args: [
+                { name: 'a', value: 'number' },
+                { name: 'b', value: 'number' },
+                { name: 'c', value: 'number' },
+                { name: 'd', value: 'number' }
+            ]
+        });
+        cmAPI.api4 = (a, b, c, d) => {
+            sum = a + b + c + d;
+        };
+
+        apis.invoke('api4', [5, 2, 1, 6]);
+        expect(sum).to.be.equal(14);
+    });
+});
 describe('Processor ArgCheck', () => {
     let apis;
     before(() => {
