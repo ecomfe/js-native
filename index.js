@@ -721,15 +721,19 @@
                     }
                 }
 
-                if (description.args.length < 5) {
-                    return function (args) {
-                        findMethod();
-                        return methodOwner[methodName](args[0], args[1], args[2], args[3]);
-                    };
-                }
-
                 return function (args) {
                     findMethod();
+
+                    switch (description.args.length) {
+                        case 0:
+                            return methodOwner[methodName]();
+                        case 1:
+                            return methodOwner[methodName](args[0]);
+                        case 2:
+                            return methodOwner[methodName](args[0], args[1]);
+                        case 3:
+                            return methodOwner[methodName](args[0], args[1], args[2]);
+                    }
                     return methodOwner[methodName].apply(methodOwner, args);
                 };
             },
