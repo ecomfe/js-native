@@ -1559,6 +1559,36 @@ describe('Processor ReturnDecode', () => {
         expect(result.four.name).to.be.equal('hello');
     });
 
+    it('no decode when meeted not string', () => {
+        apis.add({
+            invoke: ['CallMethod', 'ReturnDecode:JSON'],
+            name: "api3",
+            method: "tp4API.api3",
+            args: [
+                { name: 'one', value: 'string' },
+                { name: 'two', value: 'number' },
+                { name: 'three', value: 'boolean' },
+                { name: 'four', value: 'object' }
+            ]
+        });
+        tp4API.api3 = (one, two, three, four) => {
+            return { one, two, three, four };
+        };
+
+        let result = apis.invoke('api3', [
+            'hello',
+            2,
+            true,
+            { name: 'hello' }
+        ]);
+
+        expect(result).to.be.a('object');
+        expect(result.one).to.be.equal('hello');
+        expect(result.two).to.be.equal(2);
+        expect(result.three).to.be.equal(true);
+        expect(result.four.name).to.be.equal('hello');
+    });
+
 
 });
 
