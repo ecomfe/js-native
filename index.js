@@ -1024,10 +1024,11 @@
     /**
      * 创建 API Container
      *
+     * @param {Object=} options 创建的参数
      * @return {APIContainer}
      */
-    jsNative.createContainer = function () {
-        return new APIContainer();
+    jsNative.createContainer = function (options) {
+        return new APIContainer(options);
     };
 
     // export ==============
