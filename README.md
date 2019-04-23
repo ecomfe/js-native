@@ -158,7 +158,11 @@ jsNative 上的其他属性和方法请参考 [APIContainer](#apicontainer) 的�
 
 `参数`
 
-无
+- `{Object}` options 参数对象
+- `{string=}` options.errorTitle 显示报错信息的标题
+- `{string=}` options.namingConflict 名字冲突时的处理策略
+
+详细请参考 [config](#config) 方法
 
 `返回`
 
