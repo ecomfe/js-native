@@ -1,6 +1,12 @@
 ChangeLog
 ========
 
+1.2.2
+-------
+
++ 【新特性】- 增加 addProcessorCreator 方法
+
+
 1.2.1
 -------
 
