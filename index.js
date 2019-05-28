@@ -708,6 +708,7 @@
             CallMethod: function (description, option) {
                 var methodOwner;
                 var methodName;
+
                 function findMethod() {
                     if (!methodOwner) {
                         var segs = description.method.split('.');
@@ -794,7 +795,8 @@
 
         var apiContainer = {
             options: {
-                errorTitle: 'jsNative'
+                errorTitle: 'jsNative',
+                namingConflict: 'error'
             },
 
             apis: [],
@@ -843,6 +845,7 @@
                                 break;
                             /* jshint ignore:end */
 
+                            case 'error':
                             default:
                                 throw new Error('[' + this.options.errorTitle + '] API exists: ' + name);
                         }
@@ -1052,5 +1055,3 @@
             : this
 );
 
-// for es6 module
-export default jsNative;
