@@ -529,9 +529,21 @@
      * @return {Object}
      */
     function normalizeDescription(description) {
+        var args = [];
+        if (description.args instanceof Array) {
+            for (var i = 0; i < description.args.length; i++) {
+                var arg = description.args[i];
+
+                args.push({
+                    name: arg.name || arg.n,
+                    value: arg.value || arg.v
+                });
+            }
+        }
+
         return {
             name: description.name,
-            args: (description.args || []).slice(0),
+            args: args,
             invoke: normalizeInvoke(description.invoke),
             method: description.method,
             scheme: description.scheme || description.schema,
