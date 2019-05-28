@@ -873,7 +873,7 @@
              * 通过描述对象的 name 属性进行调用
              *
              * @param {string} name 调用描述对象名
-             * @param {Array} args 调用参数
+             * @param {Array=} args 调用参数
              * @return {*}
              */
             invoke: function (name, args) {
@@ -1039,6 +1039,11 @@
         define('jsNative', [], jsNative);
     }
 
+    // for Commonjs
+    if (typeof exports !== "undefined") {
+        exports.jsNative = jsNative;
+    }
+
 })(
     typeof window !== 'undefined'
         ? window
@@ -1046,3 +1051,6 @@
             ? global
             : this
 );
+
+// for es6 module
+export default jsNative;
