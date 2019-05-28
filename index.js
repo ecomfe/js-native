@@ -708,6 +708,7 @@
             CallMethod: function (description, option) {
                 var methodOwner;
                 var methodName;
+
                 function findMethod() {
                     if (!methodOwner) {
                         var segs = description.method.split('.');
@@ -794,7 +795,8 @@
 
         var apiContainer = {
             options: {
-                errorTitle: 'jsNative'
+                errorTitle: 'jsNative',
+                namingConflict: 'error'
             },
 
             apis: [],
@@ -843,6 +845,7 @@
                                 break;
                             /* jshint ignore:end */
 
+                            case 'error':
                             default:
                                 throw new Error('[' + this.options.errorTitle + '] API exists: ' + name);
                         }
@@ -873,7 +876,7 @@
              * 通过描述对象的 name 属性进行调用
              *
              * @param {string} name 调用描述对象名
-             * @param {Array} args 调用参数
+             * @param {Array=} args 调用参数
              * @return {*}
              */
             invoke: function (name, args) {
@@ -1039,6 +1042,11 @@
         define('jsNative', [], jsNative);
     }
 
+    // for Commonjs
+    if (typeof exports !== "undefined") {
+        exports.jsNative = jsNative;
+    }
+
 })(
     typeof window !== 'undefined'
         ? window
@@ -1046,3 +1054,4 @@
             ? global
             : this
 );
+
