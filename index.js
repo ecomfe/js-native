@@ -911,7 +911,26 @@
                     var apiName = mapAPIName(mapAPI, api.name);
 
                     if (apiName && api.invoke) {
-                        apiObject[apiName] = buildAPIMethod(api, this);
+                        if (apiName.indexOf('.') > 0) {
+                            var apiNameSegs = apiName.split('.');
+                            var j = 0;
+                            var ns = apiObject;
+
+                            for (; j < apiNameSegs.length - 1; j++) {
+                                var seg = apiNameSegs[j];
+                                
+                                ns[seg] = ns[seg] || {};
+                                ns = ns[seg];
+
+                                // 无聊留个精简写法
+                                // ns = ns[apiNameSegs[j]] = ns[apiNameSegs[j]] || {};
+                            }
+
+                            ns[apiNameSegs[j]] = buildAPIMethod(api, this);
+                        }
+                        else {
+                            apiObject[apiName] = buildAPIMethod(api, this);
+                        }
                     }
                 }
 
