@@ -5,6 +5,7 @@ ChangeLog
 -------
 
 + 【新特性】- arg 声明支持缩写，n -> name & v -> value
++ 【新特性】- map 方法当 name 包含 `.` 时，自动分割和生成中间层级 object
 
 
 1.2.2
