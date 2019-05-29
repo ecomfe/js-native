@@ -244,6 +244,46 @@ describe('APIContainer', () => {
         expect(value).to.be.equal(666);
     });
 
+    it('map api which name split by dot', () => {
+        let value;
+
+        apis.add({
+            invoke: "method",
+            name: "ns.api9",
+            method: "tAPI.api9",
+            args: [
+                {name: 'a1', value: 'number'},
+                {name: 'a2', value: 'number'},
+                {name: 'a3', value: 'number'},
+                {name: 'a4', value: 'number'},
+                {name: 'a5', value: 'number'}
+            ]
+        });
+        tAPI.api9 = (a1, a2, a3, a4, a5) => {
+            value = Math.max(a1, a2, a3, a4, a5);
+        };
+
+        apis.add({
+            invoke: "method",
+            name: "ns.api10",
+            method: "tAPI.api10",
+            args: [
+                {name: 'one', value: 'number'}
+            ]
+        });
+        tAPI.api10 = v => {
+            value = v;
+        };
+
+        let myApi = apis.map();
+
+        myApi.ns.api9(250, 1, 666, 333, 37);
+        expect(value).to.be.equal(666);
+
+        myApi.ns.api10(250);
+        expect(value).to.be.equal(250);
+    });
+
     it('no invoke property, throw Error', () => {
         apis.add({
             name: "api9",
@@ -514,6 +554,21 @@ describe('Processor ArgCheck', () => {
         apis = jsNative.createContainer();
     });
 
+
+    it('arg shortcut, n as name and v as value', () => {
+        apis.add({
+            invoke: ["ArgCheck"],
+            name: "argCheck0",
+            args: [
+                {n: 'one', v: 'number'},
+                {n: 'two', v: 'string'}
+            ]
+        });
+
+        expect(() => {
+            apis.invoke('argCheck0', [1, 2]);
+        }).to.throw('string');
+    });
 
     it('everyone collect', () => {
         apis.add({
@@ -1515,6 +1570,33 @@ describe('Processor ArgCombine', () => {
         expect(result[1]).to.be.equal(2);
         expect(result[2]).to.be.equal(true);
         expect(result[3].name).to.be.equal('hello');
+
+    });
+
+    it('Object with shortcut arg declaration', () => {
+        apis.add({
+            invoke: ['ArgCombine:Object'],
+            name: 'api7',
+            args: [
+                {n: 'one', v: 'string'},
+                {n: 'two', v: 'number'},
+                {n: 'three', v: 'boolean'},
+                {n: 'four', v: 'object'}
+            ]
+        });
+
+        let result = apis.invoke('api7', [
+            'hello',
+            2,
+            true,
+            {name: 'hello'}
+        ]);
+
+        expect(result).to.be.a('object');
+        expect(result.one).to.be.equal('hello');
+        expect(result.two).to.be.equal(2);
+        expect(result.three).to.be.equal(true);
+        expect(result.four.name).to.be.equal('hello');
 
     });
 });
