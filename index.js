@@ -993,6 +993,10 @@
                     processName = processName.slice(0, dotIndex);
                 }
 
+                if (!processorCreators[processName] || typeof processorCreators[processName] !== 'function') {
+                    throw new Error('[' + apiContainer.options.errorTitle + '] processName: ' + processName + ' is not a function');
+                }
+
                 var processor = processorCreators[processName](description, option, apiContainer);
                 if (typeof processor === 'function') {
                     processors.push(processor);
