@@ -322,7 +322,9 @@
      */
     function argJSONEncode(args) {
         each(args, function (arg, i) {
-            args[i] = JSON.stringify(arg);
+            if (typeof arg === 'object') {
+                args[i] = JSON.stringify(arg);
+            }
         });
 
         return args;
