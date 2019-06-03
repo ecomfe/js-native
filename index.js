@@ -1103,6 +1103,13 @@
     var jsNative = new APIContainer();
 
     /**
+     * 版本号
+     *
+     * @type {string}
+     */
+    jsNative.version = '1.2.4';
+
+    /**
      * 创建 API Container
      *
      * @param {Object=} options 创建的参数
