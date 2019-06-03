@@ -564,16 +564,19 @@
         }
 
         propMerger = propMerger || descriptionPropMerger;
-        return propMerger({
-            name: description.name,
-            args: args,
-            invoke: normalizeInvoke(description.invoke),
-            method: description.method,
-            scheme: description.scheme || description.schema,
-            authority: description.authority,
-            path: description.path,
-            handler: description.handler
-        });
+        return propMerger(
+            {
+                name: description.name,
+                args: args,
+                invoke: normalizeInvoke(description.invoke),
+                method: description.method,
+                scheme: description.scheme || description.schema,
+                authority: description.authority,
+                path: description.path,
+                handler: description.handler
+            }, 
+            description
+        );
     }
 
     /**
