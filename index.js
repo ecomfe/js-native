@@ -521,14 +521,36 @@
         ]
     };
 
+    var BUILTIN_DESCRIPTION_PROPS = {
+        name: 1,
+        args: 1,
+        invoke: 1,
+        method: 1,
+        scheme: 1,
+        authority: 1,
+        path: 1,
+        handler: 1
+    };
+
+    function descriptionPropMerger(target, source) {
+        for (var key in source) {
+            if (source.hasOwnProperty(key) && !BUILTIN_DESCRIPTION_PROPS[key]) {
+                target[key] = source[key];
+            }
+        }
+
+        return target;
+    }
+
     /**
      * 对调用描述对象进行标准化处理
      *
      * @inner
      * @param {Object} description 调用描述对象
+     * @param {Function?} propMerger 属性合并方法，默认实现为for...in，APIContainer可用于提升性能
      * @return {Object}
      */
-    function normalizeDescription(description) {
+    function normalizeDescription(description, propMerger) {
         var args = [];
         if (description.args instanceof Array) {
             for (var i = 0; i < description.args.length; i++) {
@@ -541,7 +563,8 @@
             }
         }
 
-        return {
+        propMerger = propMerger || descriptionPropMerger;
+        return propMerger({
             name: description.name,
             args: args,
             invoke: normalizeInvoke(description.invoke),
@@ -550,7 +573,7 @@
             authority: description.authority,
             path: description.path,
             handler: description.handler
-        };
+        });
     }
 
     /**
@@ -851,7 +874,10 @@
                         switch (this.options.namingConflict) {
                             /* jshint ignore:start */
                             case 'override':
-                                this.apis[this.apiIndex[name]] = normalizeDescription(description);
+                                this.apis[this.apiIndex[name]] = normalizeDescription(
+                                    description, 
+                                    this.descriptionPropMerger
+                                );
 
                             case 'ignore':
                                 break;
@@ -863,7 +889,7 @@
                         }
                     }
                     else {
-                        var realDesc = normalizeDescription(description);
+                        var realDesc = normalizeDescription(description, this.descriptionPropMerger);
 
                         this.apiIndex[name] = this.apisLen;
                         this.apis[this.apisLen++] = realDesc;
@@ -880,7 +906,7 @@
              * @return {APIContainer}
              */
             fromNative: function (description) {
-                return this.add(invokeDescription(normalizeDescription(description)));
+                return this.add(invokeDescription(normalizeDescription(description, this.descriptionPropMerger)));
             },
 
 
@@ -948,7 +974,7 @@
              * @return {*}
              */
             invokeAPI: function (description, args) {
-                return invokeDescription(normalizeDescription(description), args);
+                return invokeDescription(normalizeDescription(description, this.descriptionPropMerger), args);
             },
 
             /**
