@@ -1,6 +1,12 @@
 ChangeLog
 ========
 
+1.2.4
+-------
+
++ 【优化】- 开放 description 对象的属性扩展，并可通过 setExternalDescriptionProps 优化性能
+
+
 1.2.3
 -------
 
