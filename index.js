@@ -993,6 +993,24 @@
                 }
                 processorCreators[name] = processorCreator;
                 return this;
+            },
+
+            /**
+             * 设置 description 额外的属性列表
+             * 若设置了description 额外的属性列表，不在列表中的属性将被忽略
+             * 该接口应仅用于性能优化，不应改变默认行为
+             *
+             * @param {Array.<string>} props description额外的属性列表
+             */
+            setExternalDescriptionProps: function (props) {
+                var code = '';
+
+                for (var i = 0; i < props.length; i++) {
+                    var prop = props[i];
+                    code += 'target["' + prop + '"] = source["' + prop + '"];';
+                }
+
+                this.descriptionPropMerger = new Function('target', 'source', code + 'return target;');
             }
         };
 
