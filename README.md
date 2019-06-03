@@ -419,6 +419,37 @@ let mod2 = apiContainer.map(name => name.slice(name.indexOf('.') + 1));
 mod2.request('https://yourdomain.com/path', 'GET', data => {});
 ```
 
+#### setExternalDescriptionProps
+
+`说明`
+
+设置额外的 description 属性列表。
+
+若设置了额外的 description 属性列表，不在列表中的属性将被忽略。该接口应仅用于性能优化，不应改变默认行为。
+
+`参数`
+
+- `{Array}` props 额外的description属性列表
+
+`返回`
+
+无
+
+`示例`
+
+```js
+apis.setExternalDescriptionProps(['myProp']);
+
+apis.addProcessorCreator(
+    'ReadMyProp',
+    function (description) {
+        return function () {
+            return description.myProp;
+        }
+    }
+);
+```
+
 ## License
 
 jsNative is [MIT licensed](./LICENSE).
