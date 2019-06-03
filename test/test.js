@@ -457,6 +457,28 @@ describe('APIContainer', () => {
 
         expect(apis.invoke('api14', [2, 1])).to.be.equal('san');
     });
+
+    it('description should be extensible，use setExternalDescriptionProps', () => {
+        tAPI.api15 = (a, b) => {
+            return a + b;
+        };
+        apis.addProcessorCreator(
+            'ReadMyProp2',
+            (description, option) => args => description.myProp2
+        );
+
+        apis.setExternalDescriptionProps(['myProp2'])
+
+        apis.add({
+            invoke: ['ReadMyProp2'],
+            name: "api15",
+            method: "tAPI.api15",
+            args: [],
+            myProp2: 'san'
+        });
+
+        expect(apis.invoke('api15', [2, 1])).to.be.equal('san');
+    });
 });
 
 describe('Processor CallMethod', () => {
