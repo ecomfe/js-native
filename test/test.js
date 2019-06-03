@@ -437,6 +437,26 @@ describe('APIContainer', () => {
             );
         }).to.throw('processorCreators exists');
     });
+
+    it('description should be extensible', () => {
+        tAPI.api14 = (a, b) => {
+            return a + b;
+        };
+        apis.addProcessorCreator(
+            'ReadMyProp',
+            (description, option) => args => description.myProp
+        );
+
+        apis.add({
+            invoke: ['ReadMyProp'],
+            name: "api14",
+            method: "tAPI.api14",
+            args: [],
+            myProp: 'san'
+        });
+
+        expect(apis.invoke('api14', [2, 1])).to.be.equal('san');
+    });
 });
 
 describe('Processor CallMethod', () => {
