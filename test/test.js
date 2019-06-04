@@ -467,7 +467,7 @@ describe('APIContainer', () => {
             (description, option) => args => description.myProp2
         );
 
-        apis.setExternalDescriptionProps(['myProp2'])
+        apis.setExternalDescriptionProps(['myProp2', 'name']);
 
         apis.add({
             invoke: ['ReadMyProp2'],
