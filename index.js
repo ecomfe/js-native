@@ -1007,7 +1007,9 @@
 
                 for (var i = 0; i < props.length; i++) {
                     var prop = props[i];
-                    code += 'target["' + prop + '"] = source["' + prop + '"];';
+                    if (!BUILTIN_DESCRIPTION_PROPS[prop]) {
+                        code += 'target["' + prop + '"] = source["' + prop + '"];';
+                    }
                 }
 
                 this.descriptionPropMerger = new Function('target', 'source', code + 'return target;');
