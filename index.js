@@ -322,7 +322,9 @@
      */
     function argJSONEncode(args) {
         each(args, function (arg, i) {
-            args[i] = JSON.stringify(arg);
+            if (typeof arg === 'object') {
+                args[i] = JSON.stringify(arg);
+            }
         });
 
         return args;
@@ -1040,6 +1042,10 @@
                 if (dotIndex > 0) {
                     option = processName.slice(dotIndex + 1);
                     processName = processName.slice(0, dotIndex);
+                }
+
+                if (!processorCreators[processName] || typeof processorCreators[processName] !== 'function') {
+                    throw new Error('[' + apiContainer.options.errorTitle + '] processName: ' + processName + ' is not a function');
                 }
 
                 var processor = processorCreators[processName](description, option, apiContainer);
