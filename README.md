@@ -284,6 +284,34 @@ apis.addProcessorCreator(
 );
 ```
 
+#### addInvokeShortcut
+
+`说明`
+
+新增调用场景简写，新增的场景同内置场景使用方式一样(但不可以冲掉内置的场景 )
+
+`参数`
+
+- `{string}` name 注册的场景名称
+- `{Function}` processorCreator 需要注册场景的invokes，是一个由invoke字符串组成的数组
+
+`返回`
+
+`{APIContainer}` this
+
+`示例`
+
+```js
+apis.addInvokeShortcut(
+    'myMethod.json',
+    [
+        "ArgCheck",
+        "CallMethod",
+        "ReturnDecode:JSON"
+    ]
+);
+```
+
 #### config
 
 `说明`
