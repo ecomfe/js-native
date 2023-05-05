@@ -542,82 +542,17 @@
         return target;
     }
 
-    /**
-     * 对调用描述对象进行标准化处理
-     *
-     * @inner
-     * @param {Object} description 调用描述对象
-     * @param {Function?} propMerger 属性合并方法，默认实现为for...in，APIContainer可用于提升性能
-     * @return {Object}
-     */
-    function normalizeDescription(description, propMerger) {
-        var args = [];
-        if (description.args instanceof Array) {
-            for (var i = 0; i < description.args.length; i++) {
-                var arg = description.args[i];
-
-                args.push({
-                    name: arg.name || arg.n,
-                    value: arg.value || arg.v
-                });
-            }
-        }
-
-        propMerger = propMerger || descriptionPropMerger;
-        return propMerger(
-            {
-                name: description.name,
-                args: args,
-                invoke: normalizeInvoke(description.invoke),
-                method: description.method,
-                scheme: description.scheme || description.schema,
-                authority: description.authority,
-                path: description.path,
-                handler: description.handler
-            }, 
-            description
-        );
-    }
-
-    /**
-     * 对 description 中的 invoke 属性进行标准化处理
-     *
-     * @inner
-     * @param {Array|Object|string} invoke description的invoke属性
-     * @return {Array?}
-     */
-    function normalizeInvoke(invoke) {
-        if (invoke instanceof Array) {
-            return invoke;
-        }
-
-        switch (typeof invoke) {
-            case 'string':
-                return INVOKE_SHORTCUT[invoke];
-
-            case 'object':
-                var result = [];
-
-                if (invoke.check) {
-                    result.push('ArgCheck');
-                }
-
-                if (invoke.before) {
-                    result = result.concat(INVOKE_BEFORE_MAP[invoke.before]);
-                }
-
-                result.push(INVOKE_CALL_MAP[invoke.call]);
-
-                if (invoke.after === 'JSON') {
-                    result.push('ReturnDecode:JSON');
-                }
-
-                return result;
-
-        }
-    }
+    
 
     function APIContainer(options) {
+
+        /**
+         * invokeShortcuts 快捷命令集合
+         *
+         * @inner
+         * @type {Object}
+         */
+        var invokeShortcuts = Object.assign({}, INVOKE_SHORTCUT);
         /**
          * processor 创建方法集合
          *
@@ -994,6 +929,20 @@
                 processorCreators[name] = processorCreator;
                 return this;
             },
+            /**
+             * 开发者补充shortcut的自定义集(TIPS:不能刷掉内置的shortcut)
+             *
+             * @param {string} name 注册的shortcut名称
+             * @param {Array} 需要注册的shortcut invokes，是一个由invoke字符串组成的数组
+             * @return {APIContainer}
+             */
+            addInvokeShortcut: function (name, invokes) {
+                if (invokeShortcuts[name]) {
+                    throw new Error('[' + this.options.errorTitle + '] invokeShortcuts exists: ' + name);
+                }
+                invokeShortcuts[name] = invokes;
+                return this
+            },
 
             /**
              * 设置 description 额外的属性列表
@@ -1092,6 +1041,80 @@
             return function () {
                 return process(Array.prototype.slice.call(arguments, 0, description.args.length));
             };
+        }
+        /**
+         * 对调用描述对象进行标准化处理
+         *
+         * @inner
+         * @param {Object} description 调用描述对象
+         * @param {Function?} propMerger 属性合并方法，默认实现为for...in，APIContainer可用于提升性能
+         * @return {Object}
+         */
+        function normalizeDescription(description, propMerger) {
+            var args = [];
+            if (description.args instanceof Array) {
+                for (var i = 0; i < description.args.length; i++) {
+                    var arg = description.args[i];
+
+                    args.push({
+                        name: arg.name || arg.n,
+                        value: arg.value || arg.v
+                    });
+                }
+            }
+
+            propMerger = propMerger || descriptionPropMerger;
+            return propMerger(
+                {
+                    name: description.name,
+                    args: args,
+                    invoke: normalizeInvoke(description.invoke),
+                    method: description.method,
+                    scheme: description.scheme || description.schema,
+                    authority: description.authority,
+                    path: description.path,
+                    handler: description.handler
+                }, 
+                description
+            );
+        }
+
+        /**
+         * 对 description 中的 invoke 属性进行标准化处理
+         *
+         * @inner
+         * @param {Array|Object|string} invoke description的invoke属性
+         * @return {Array?}
+         */
+        function normalizeInvoke(invoke) {
+            if (invoke instanceof Array) {
+                return invoke;
+            }
+
+            switch (typeof invoke) {
+                case 'string':
+                    return invokeShortcuts[invoke];
+
+                case 'object':
+                    var result = [];
+
+                    if (invoke.check) {
+                        result.push('ArgCheck');
+                    }
+
+                    if (invoke.before) {
+                        result = result.concat(INVOKE_BEFORE_MAP[invoke.before]);
+                    }
+
+                    result.push(INVOKE_CALL_MAP[invoke.call]);
+
+                    if (invoke.after === 'JSON') {
+                        result.push('ReturnDecode:JSON');
+                    }
+
+                    return result;
+
+            }
         }
     }
 

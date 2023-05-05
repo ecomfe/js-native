@@ -479,6 +479,39 @@ describe('APIContainer', () => {
 
         expect(apis.invoke('api15', [2, 1])).to.be.equal('san');
     });
+    it('addInvokeShortcut', () => {
+        tAPI.api16 = (a, b) => {
+            return a + b;
+        };
+        apis.addProcessorCreator(
+            'increaseNumber',
+            () => args => {
+                return Array.isArray(args) ? args.map((i) => typeof i === 'number' ? ++i : i) : args
+            }
+        );
+        apis.addInvokeShortcut('increaseNumberAndCallMethod', [
+            'increaseNumber',
+            'CallMethod'
+        ]);
+        apis.add({
+            invoke: 'increaseNumberAndCallMethod',
+            name: 'api16',
+            method: "tAPI.api16",
+            args: [
+                {name: 'one', value: 'number'},
+                {name: 'two', value: 'number'}
+            ],
+        });
+        expect(apis.invoke('api16', [2, 1])).to.be.equal(5);
+    });
+    it('addInvokeShortcut error', () => {
+        expect(() => {
+            apis.addInvokeShortcut('method', [
+                "ArgCheck",
+                "CallMethod"
+            ]);
+        }).to.throw('invokeShortcuts exists');
+    });
 });
 
 describe('Processor CallMethod', () => {
